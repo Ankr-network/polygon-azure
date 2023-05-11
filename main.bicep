@@ -42,10 +42,21 @@ param indexerVmSize string = 'Standard_D4s_v4'
 @description('Indexer VM availability zones')
 param indexerAvailabilityZones string = ''
 
+@description('Explorer enabled')
+param explorerEnabled bool = false
+
+@description('Explorer VM size')
+param explorerVmSize string = 'Standard_D4s_v4'
+
+@description('Explorer VM availability zones')
+param explorerAvailabilityZones string = ''
+
 // this is used to ensure uniqueness to naming (making it non-deterministic)
 param rutcValue string = utcNow()
 
 var polygonVersion = '0.8.1'
+
+var blockscoutVersion = '4.1.5'
 
 var loadBalancerName = '${uniqueString(resourceGroup().id)}lb'
 
@@ -110,7 +121,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     containerSettings: {
       containerGroupName: '${uniqueString(resourceGroup().id)}ci1'
     }
-    primaryScriptUri: 'https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/deploy.sh'
+    primaryScriptUri: 'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/deploy.sh'
     timeout: 'PT30M'
     cleanupPreference: 'OnSuccess'
     azCliVersion: '2.28.0'
@@ -362,5 +373,26 @@ module idxVmModule 'modules/idxVm.bicep' = if (indexerEnabled) {
   }
 }
 
+module explorerVmModule 'modules/explorerVm.bicep' = if (explorerEnabled) {
+  name: 'explorerDeploy'
+  dependsOn: [
+    deploymentScript
+  ]
+  params: {
+    location: location
+    vmSize: explorerVmSize
+    adminUsername: adminUsername
+    adminPasswordOrKey: adminPasswordOrKey
+    authenticationType: authenticationType
+    managedIdentity: managedIdentity.id
+    nsg: nsg.id
+    subnetId: vnet.properties.subnets[0].id
+    totalNodes: 1
+    availabilityZones: explorerAvailabilityZones
+    loadBalancerName: loadBalancerName
+    loadBalancerBackendName: 'lbexpbe'
+    blockscoutVersion: blockscoutVersion
+  }
+}
 // output rpcAddress string = pipRpc.properties.ipAddress
 // output idxAddress string = pipIdx.properties.ipAddress

@@ -134,7 +134,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
     autoUpgradeMinorVersion: true
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/clientDeploy.sh'
+        'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh'
       ]
       commandToExecute: '/bin/bash clientDeploy.sh ${managedIdentity} ${akvName} ${e} ${polygonVersion}'
     }

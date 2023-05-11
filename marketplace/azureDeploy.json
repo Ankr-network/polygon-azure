@@ -179,7 +179,7 @@
         "containerSettings": {
           "containerGroupName": "[format('{0}ci1', uniqueString(resourceGroup().id))]"
         },
-        "primaryScriptUri": "https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/deploy.sh",
+        "primaryScriptUri": "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/deploy.sh",
         "timeout": "PT30M",
         "cleanupPreference": "OnSuccess",
         "azCliVersion": "2.28.0",
@@ -581,7 +581,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/devDeploy.sh"
+                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/devDeploy.sh"
                   ],
                   "commandToExecute": "[format('/bin/bash devDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), parameters('totalNodes'), parameters('polygonVersion'))]"
                 }
@@ -850,7 +850,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/clientDeploy.sh"
+                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
                   ],
                   "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('polygonVersion'))]"
                 }
@@ -1144,7 +1144,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/clientDeploy.sh"
+                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
                   ],
                   "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 4), parameters('polygonVersion'))]"
                 }
@@ -1437,7 +1437,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/caleteeter/polygon-azure/main/scripts/clientDeploy.sh"
+                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
                   ],
                   "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6), parameters('polygonVersion'))]"
                 }

@@ -1,9 +1,6 @@
 @description('Azure region that will be targeted for resources.')
 param location string
 
-@description('AKV name')
-param akvName string
-
 @description('Subnet id')
 param subnetId string
 
@@ -42,8 +39,8 @@ param availabilityZones string = ''
 @description('Total nodes')
 param totalNodes int
 
-@description('Polygon version number')
-param polygonVersion string
+@description('Blockscout version number')
+param blockscoutVersion string
 
 var linuxConfiguration = {
   disablePasswordAuthentication: true
@@ -58,14 +55,14 @@ var linuxConfiguration = {
 }
 
 resource nic 'Microsoft.Network/networkInterfaces@2022-07-01' = [for i in range(0, totalNodes): {
-  name: '${uniqueString(resourceGroup().id)}nic${int(i)+6}'
+  name: '${uniqueString(resourceGroup().id)}nic${int(i)+4}'
   location: location
   properties: {
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
-          privateIPAddress: '10.1.1.${int(i)+17}'
+          privateIPAddress: '10.1.1.${int(i)+15}'
           privateIPAllocationMethod: 'Static'
           subnet: {
             id: subnetId 
@@ -88,7 +85,7 @@ resource nic 'Microsoft.Network/networkInterfaces@2022-07-01' = [for i in range(
 }]
 
 resource vm 'Microsoft.Compute/virtualMachines@2022-11-01' = [for v in range(0, totalNodes): {
-  name: '${uniqueString(resourceGroup().id)}vm${int(v)+6}'
+  name: '${uniqueString(resourceGroup().id)}vm${int(v)+4}'
   location: location
   dependsOn: [
     nic[v]
@@ -135,7 +132,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-11-01' = [for v in range(0, 
 }]
 
 resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' = [for e in range(0, totalNodes): {
-  name: '${uniqueString(resourceGroup().id)}vmext${int(e)+6}'
+  name: '${uniqueString(resourceGroup().id)}vmext${int(e)+4}'
   location: location
   parent: vm[e]
   properties: {
@@ -145,9 +142,9 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
     autoUpgradeMinorVersion: true
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh'
+        'https://raw.githubusercontent.com/Ankr-network/polygon-azure/develop/scripts/explorerDeploy.sh'
       ]
-      commandToExecute: '/bin/bash clientDeploy.sh ${managedIdentity} ${akvName} ${int(e)+6} ${polygonVersion}'
+      commandToExecute: '/bin/bash explorerDeploy.sh'
     }
   }
 }]
