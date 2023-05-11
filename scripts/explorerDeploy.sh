@@ -53,8 +53,8 @@ services:
     command: 'mix do ecto.create, ecto.migrate, phx.server'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
-    env_file:
-      -  ./envs/common-blockscout.env
+    # env_file:
+    #   -  ./envs/common-blockscout.env
     logging:
       driver: "json-file"
       options:

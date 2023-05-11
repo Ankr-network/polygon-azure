@@ -25,7 +25,7 @@ param validatorVmSize string = 'Standard_D4s_v4'
 param validatorAvailabilityZones string = ''
 
 @description('RPC enabled')
-param rpcEnabled bool = false
+param rpcEnabled bool = true
 
 @description('RPC VM size')
 param rpcVmSize string = 'Standard_D4s_v4'
@@ -43,7 +43,7 @@ param indexerVmSize string = 'Standard_D4s_v4'
 param indexerAvailabilityZones string = ''
 
 @description('Explorer enabled')
-param explorerEnabled bool = false
+param explorerEnabled bool = true
 
 @description('Explorer VM size')
 param explorerVmSize string = 'Standard_D4s_v4'
@@ -184,6 +184,19 @@ resource pipIdx 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   }
 }
 
+resource pipExp 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
+  name: '${uniqueString(resourceGroup().id)}pipexp'
+  location: location
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+    publicIPAddressVersion: 'IPv4'
+  }
+}
+
 resource pipRpc 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   name: '${uniqueString(resourceGroup().id)}piprpc'
   location: location
@@ -225,6 +238,14 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
             id: pipIdx.id
           }
         }
+      },{
+        name: 'lbexpfe'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: pipExp.id
+          }
+        }
       }
     ]
     backendAddressPools: [
@@ -232,6 +253,8 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
         name: 'lbrpcbe'
       },{
         name: 'lbidxbe'
+      },{
+        name: 'lbexpbe'
       }
     ]
     loadBalancingRules: [
@@ -269,6 +292,23 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
           backendPort: 8545
           idleTimeoutInMinutes: 15
         }
+      },{
+        name: 'lbexprule'
+        properties: {
+          frontendIPConfiguration: {
+            id: resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', loadBalancerName , 'lbexpfe')
+          }
+          backendAddressPool: {
+            id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadBalancerName, 'lbexpbe')
+          }
+          probe: {
+            id: resourceId('Microsoft.Network/loadBalancers/probes', loadBalancerName, 'lbexpprobe')
+          }
+          protocol: 'Tcp'
+          frontendPort: 4010
+          backendPort: 4010
+          idleTimeoutInMinutes: 15
+        }
       }
     ]
     probes: [
@@ -277,6 +317,14 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
         properties: {
           protocol: 'Tcp'
           port: 8545
+          intervalInSeconds: 5
+          numberOfProbes: 2
+        }
+      },{
+        name: 'lbexpprobe'
+        properties: {
+          protocol: 'Tcp'
+          port: 4010
           intervalInSeconds: 5
           numberOfProbes: 2
         }
@@ -375,9 +423,6 @@ module idxVmModule 'modules/idxVm.bicep' = if (indexerEnabled) {
 
 module explorerVmModule 'modules/explorerVm.bicep' = if (explorerEnabled) {
   name: 'explorerDeploy'
-  dependsOn: [
-    deploymentScript
-  ]
   params: {
     location: location
     vmSize: explorerVmSize
