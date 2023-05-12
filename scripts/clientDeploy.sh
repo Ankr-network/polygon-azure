@@ -4,6 +4,7 @@ managedIdentity=$1
 vaultName=$2
 nodeId=$3
 polygonVersion=$4
+addressesToPremine=$5
 
 nodeId=$(( nodeId + 1 ))
 
@@ -26,8 +27,11 @@ az keyvault secret download --vault-name ${vaultName} --file manifest.json --nam
 base64 -d node${nodeId} > data.tar.gz
 tar xvfz data.tar.gz
 
+# Output addresses for debug
+echo $addressesToPremine > addresses.json
+
 # create the genesis
-polygon-edge genesis --block-gas-limit 10000000 --epoch-size 10 --consensus polybft --bridge-json-rpc http://10.1.1.50:8545
+polygon-edge genesis --block-gas-limit 10000000 --epoch-size 10 --consensus polybft --bridge-json-rpc http://10.1.1.50:8545 #--premine 0x61324166B0202DB1E7502924326262274Fa4358F:1000000000000000000000
 
 # run on each servers
 polygon-edge server --data-dir data${nodeId} --chain genesis.json --grpc-address 0.0.0.0:5001 --libp2p 0.0.0.0:30301 --jsonrpc 0.0.0.0:10001 --seal --log-level DEBUG &> output.log &

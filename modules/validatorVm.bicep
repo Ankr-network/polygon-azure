@@ -13,6 +13,20 @@ param nsg string
 @description('The identity used by the VM')
 param managedIdentity string
 
+@description('Type of consensus to use for the network')
+@allowed([
+  'polybft'
+])
+param consensusType string
+
+@description('Addresses and the amount of tokens to premine.')
+@metadata({
+  address: '0x3383e0EbB44d2929abD654cFe4DF52C818af3230'
+  tokenAmount: '1000'
+})
+param addressesToPremine object
+
+
 @description('The size of the virtual machine')
 param vmSize string
 
@@ -136,7 +150,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh'
       ]
-      commandToExecute: '/bin/bash clientDeploy.sh ${managedIdentity} ${akvName} ${e} ${polygonVersion}'
+      commandToExecute: '/bin/bash clientDeploy.sh ${managedIdentity} ${akvName} ${e} ${polygonVersion} ${addressesToPremine}'
     }
   }
 }]

@@ -24,6 +24,29 @@ param validatorVmSize string = 'Standard_D4s_v4'
 @description('Validator VM availability zones')
 param validatorAvailabilityZones string = ''
 
+@description('Type of consensus to use for the network')
+@allowed([
+  'polybft'
+])
+param consensusType string
+
+@description('Addresses and the amount of tokens to premine.')
+@metadata({
+  addresses: [
+    {
+      address: '0x00'
+      tokenAmount: '1000000'
+    }
+  ]
+})
+param addressesToPremine object
+
+@description('Premine amount for validators')
+param premineAmount int = 100
+
+@description('The maximum amount of gas used by all transactions in a block')
+param blockGasLimit int = 10000000
+
 @description('RPC enabled')
 param rpcEnabled bool = true
 
@@ -32,6 +55,15 @@ param rpcVmSize string = 'Standard_D4s_v4'
 
 @description('RPC VM availability zones')
 param rpcAvailabilityZones string = ''
+
+@description('Archive RPC enabled')
+param archiveRPCEnabled bool = false
+
+@description('Archive RPC VM size')
+param archiveRPCVmSize string = 'Standard_D4s_v4'
+
+@description('Archive RPC VM availability zones')
+param archiveRPCAvailabilityZones string = ''
 
 @description('Indexer enabled')
 param indexerEnabled bool = false
@@ -116,7 +148,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   }
   
   properties: {
-    arguments: '${managedIdentity.id} ${akv.name} ${(rpcEnabled ? 2 : 0)} ${(indexerEnabled ? 2 : 0)} ${polygonVersion}'
+    arguments: '${managedIdentity.id} ${akv.name} ${(rpcEnabled ? 2 : 0)} ${(indexerEnabled ? 2 : 0)} ${polygonVersion} ${premineAmount}'
     forceUpdateTag: '1'
     containerSettings: {
       containerGroupName: '${uniqueString(resourceGroup().id)}ci1'
@@ -161,10 +193,22 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2022-07-01' = {
           protocol: 'Tcp'
           sourcePortRange: '*'
           sourceAddressPrefix: '*'
-          destinationPortRange: '8545'
+          destinationPortRange: '10001'
           destinationAddressPrefix: '*'
           direction: 'Inbound'
           priority: 101
+        }
+      },{
+        name: 'explorer'
+        properties: {
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationPortRange: '4010'
+          destinationAddressPrefix: '*'
+          direction: 'Inbound'
+          priority: 111
         }
       }
     ]
@@ -271,8 +315,8 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
             id: resourceId('Microsoft.Network/loadBalancers/probes', loadBalancerName, 'lbprobe')
           }
           protocol: 'Tcp'
-          frontendPort: 8545
-          backendPort: 8545
+          frontendPort: 10001
+          backendPort: 10001
           idleTimeoutInMinutes: 15
         }
       },{
@@ -288,8 +332,8 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
             id: resourceId('Microsoft.Network/loadBalancers/probes', loadBalancerName, 'lbprobe')
           }
           protocol: 'Tcp'
-          frontendPort: 8545
-          backendPort: 8545
+          frontendPort: 10001
+          backendPort: 10001
           idleTimeoutInMinutes: 15
         }
       },{
@@ -316,7 +360,7 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
         name: 'lbprobe'
         properties: {
           protocol: 'Tcp'
-          port: 8545
+          port: 10001
           intervalInSeconds: 5
           numberOfProbes: 2
         }
@@ -371,6 +415,8 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
     subnetId: vnet.properties.subnets[0].id
     totalNodes: 4
     availabilityZones: validatorAvailabilityZones
+    consensusType: consensusType
+    validators: validators
     polygonVersion: polygonVersion
   }
 }
