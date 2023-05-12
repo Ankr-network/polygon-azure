@@ -71,4 +71,4 @@ services:
     ports:
       - 127.0.0.1:4010:4000" | sudo tee docker-compose.yml > /dev/null
 
-sudo docker-compose up -d
+sudo docker-compose up
