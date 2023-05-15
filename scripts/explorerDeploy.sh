@@ -69,6 +69,6 @@ services:
         ECTO_USE_SSL: 'false'
         SECRET_KEY_BASE: '56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN'
     ports:
-      - 127.0.0.1:4010:4000" | sudo tee docker-compose.yml > /dev/null
+      - 4010:4000" | sudo tee docker-compose.yml > /dev/null
 
 sudo docker-compose up -d

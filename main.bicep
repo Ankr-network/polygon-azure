@@ -34,8 +34,8 @@ param consensusType string
 @metadata({
   addresses: [
     {
-      address: '0x00'
-      tokenAmount: '1000000'
+      address: '0x3383e0EbB44d2929abD654cFe4DF52C818af3230'
+      tokenAmount: '1000'
     }
   ]
 })
