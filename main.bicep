@@ -416,7 +416,7 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
     totalNodes: 4
     availabilityZones: validatorAvailabilityZones
     consensusType: consensusType
-    validators: validators
+    addressesToPremine: addressesToPremine
     polygonVersion: polygonVersion
   }
 }
@@ -469,6 +469,9 @@ module idxVmModule 'modules/idxVm.bicep' = if (indexerEnabled) {
 
 module explorerVmModule 'modules/explorerVm.bicep' = if (explorerEnabled) {
   name: 'explorerDeploy'
+  dependsOn: [
+    rpcVmModule
+  ]
   params: {
     location: location
     vmSize: explorerVmSize

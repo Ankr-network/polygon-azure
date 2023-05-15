@@ -5,6 +5,7 @@ vaultName=$2
 totalNodeCount=$3
 polygonVersion=$4
 
+
 # install azcli tools
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
