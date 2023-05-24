@@ -24,12 +24,6 @@ param validatorVmSize string = 'Standard_D4s_v4'
 @description('Validator VM availability zones')
 param validatorAvailabilityZones string = ''
 
-@description('Type of consensus to use for the network')
-@allowed([
-  'polybft'
-])
-param consensusType string
-
 @description('Addresses and the amount of tokens to premine.')
 @metadata({
   addresses: [
@@ -55,15 +49,6 @@ param rpcVmSize string = 'Standard_D4s_v4'
 
 @description('RPC VM availability zones')
 param rpcAvailabilityZones string = ''
-
-@description('Archive RPC enabled')
-param archiveRPCEnabled bool = false
-
-@description('Archive RPC VM size')
-param archiveRPCVmSize string = 'Standard_D4s_v4'
-
-@description('Archive RPC VM availability zones')
-param archiveRPCAvailabilityZones string = ''
 
 @description('Indexer enabled')
 param indexerEnabled bool = false
@@ -415,7 +400,6 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
     subnetId: vnet.properties.subnets[0].id
     totalNodes: 4
     availabilityZones: validatorAvailabilityZones
-    consensusType: consensusType
     addressesToPremine: addressesToPremine
     polygonVersion: polygonVersion
   }

@@ -13,11 +13,6 @@ param nsg string
 @description('The identity used by the VM')
 param managedIdentity string
 
-@description('Type of consensus to use for the network')
-@allowed([
-  'polybft'
-])
-param consensusType string
 
 @description('Addresses and the amount of tokens to premine.')
 @metadata({
