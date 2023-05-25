@@ -1,3 +1,34 @@
+# Init variables from Bicep
+managedIdentity=$1
+vaultName=$2
+validatorsAmount=$3
+
+
+# Install dependencies
+sudo apt install ncat jq wget -y
+
+cd ~/
+mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v0.9.0/polygon-edge_0.9.0_linux_amd64.tar.gz && tar xvf polygon-edge_0.9.0_linux_amd64.tar.gz
+sudo mv polygon-edge /usr/local/bin/
+
+# Install docker
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo \
+"deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+"$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+# Install Azure CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+
 # Start rootchain server
 
 echo "[Unit]
@@ -46,28 +77,130 @@ sudo systemctl daemon-reload
 sudo systemctl enable polygon_rootchain_netcat_1
 sudo systemctl start polygon_rootchain_netcat_1
 
-# Deploy contracts to rootchain, need to get genesis from validators
-polygon-edge rootchain deploy --genesis /srv/tank/my-supernet/genesis.json --json-rpc http://127.0.0.1:8545 --test
+export folderName="edge-validator-"
 
-rootERC20=$(cat /srv/tank/my-supernet/genesis.json | jq -r '.params.engine.polybft.bridge.nativeERC20Address')
-stakeManagerAddr=$(cat /srv/tank/my-supernet/genesis.json | jq -r '.params.engine.polybft.bridge.stakeManagerAddr')
-customSupernetManagerAddr=$(cat /srv/tank/my-supernet/genesis.json | jq -r '.params.engine.polybft.bridge.customSupernetManagerAddr')
-chainID=$(cat /srv/tank/my-supernet/genesis.json | jq -r '.params.chainID')
+function generateValidators() {
+    amountOfValidators=$1
 
-# Private key here is used, is the default one of test account, consider changing it
-polygon-edge polybft whitelist-validators \
-    --private-key aa75e9a7d427efc732f8e4f1a5b7646adcc61fd5bae40f80d13c8419c9f43d6d \
-    --addresses ${VALIDATOR_KEY_ONE},${VALIDATOR_KEY_TWO},${VALIDATOR_KEY_THREE},${VALIDATOR_KEY_FOUR} \
-    --supernet-manager ${customSupernetManagerAddr} --jsonrpc http://127.0.0.1:8545
+    polygon-edge polybft-secrets --insecure --data-dir /srv/tank/${folderName} --num $amountOfValidators
 
-# Return back to validators
+    az login --identity --username $managedIdentity
+
+    i=1
+    while [ $i -le $amountOfValidators ]
+    do
+        tar -czvf data${i}.tar.gz /srv/tank/${folderName}${i}
+        base64 data$i.tar.gz > node$i
+        az keyvault secret set --vault-name $vaultName --name node$i --file node$i
+        ((i++))
+    done
+
+    
+}
+
+function initRootchain() {
+    amountOfValidators=$1
+
+    rewardWallet="0x3383e0EbB44d2929abD654cFe4DF52C818af3230"
+    addressesToPremine="0x3383e0EbB44d2929abD654cFe4DF52C818af3230"
+    amountToPremine=1000000000000000000000
+    nativeTokenConfig="SuperTestCoin:STC:18"
+
+    # Assemble the command for generating genesis
+    validatorCommandLine=""
+    validatorAddressesList=""
+    validatorAmountToFundList=""
+
+    counter=1
+    
+    while [ $counter -le $amountOfValidators ]
+    do
+        address=$(polygon-edge polybft-secrets --insecure --data-dir /srv/tank/${folderName}${counter} | grep address | sed -e 's#.*=\(\)#\1#' | sed 's/ //g')
+        blsKey=$(polygon-edge polybft-secrets --insecure --data-dir /srv/tank/${folderName}${counter} | grep BLS | sed -e 's#.*=\(\)#\1#' | sed 's/ //g')
+        nodeId=$(polygon-edge polybft-secrets --insecure --data-dir /srv/tank/${folderName}${counter} | grep Node | sed -e 's#.*=\(\)#\1#' | sed 's/ //g')
+        ipv4=10.1.1.1$counter
+
+        VALIDATOR="/ip4/${ipv4}/tcp/30301/p2p/${nodeId}:${address}:${blsKey}"
+
+        validatorCommandLine="${validatorCommandLine} --validators ${VALIDATOR}"
+        validatorAddressesList="${address},${validatorAddressesList}"
+        validatorAmountToFundList="1000000000000000000000000,${validatorAmountToFundList}"
+
+        ((counter++))
+    done
+
+    allowAddressList=${validatorAddressesList}
+
+    mkdir -p /srv/tank/configs
+
+    polygon-edge genesis --dir /srv/tank/configs/genesis.json --block-gas-limit 10000000 --epoch-size 10 \
+        ${validatorCommandLine} \
+        --consensus polybft \
+        --reward-wallet ${rewardWallet}:1000000 \
+        --transactions-allow-list-admin ${allowAddressList} \
+        --transactions-allow-list-enabled ${allowAddressList} \
+        --premine ${addressesToPremine}:${amountToPremine} --native-token-config ${nativeTokenConfig}
+
+    polygon-edge rootchain deploy --genesis /srv/tank/configs/genesis.json --json-rpc http://127.0.0.1:8545 --test
+
+    rootERC20=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.nativeERC20Address')
+    stakeManagerAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.stakeManagerAddr')
+    customSupernetManagerAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.customSupernetManagerAddr')
+    chainID=$(cat /srv/tank/configs/genesis.json | jq -r '.params.chainID')
+
+    counter=1
+    while [ $counter -le $amountOfValidators ]
+    do
+        polygon-edge rootchain fund \
+            --native-root-token ${rootERC20} \
+            --mint \
+            --data-dir /srv/tank/${folderName}${counter} \
+            --amount 1000000000000000000
+        ((counter++))
+    done
+
+    polygon-edge polybft whitelist-validators \
+        --addresses ${validatorAddressesList} \
+        --supernet-manager ${customSupernetManagerAddr} \
+        --private-key aa75e9a7d427efc732f8e4f1a5b7646adcc61fd5bae40f80d13c8419c9f43d6d \
+        --jsonrpc http://127.0.0.1:8545
 
 
-# Finalize validator set and genesis file
-polygon-edge polybft supernet \
-    --private-key aa75e9a7d427efc732f8e4f1a5b7646adcc61fd5bae40f80d13c8419c9f43d6d \
-    --supernet-manager ${customSupernetManagerAddr} \
-    --stake-manager ${stakeManagerAddr} \
-    --finalize-genesis-set \
-    --enable-staking \
-    --jsonrpc http://127.0.0.1:8545
+    counter=1
+    while [ $counter -le $amountOfValidators ]
+    do
+        echo "Registering validator: ${counter}"
+
+        polygon-edge polybft register-validator \
+            --supernet-manager ${customSupernetManagerAddr} \
+            --data-dir /srv/tank/${folderName}${counter} \
+            --jsonrpc http://127.0.0.1:8545
+
+        polygon-edge polybft stake \
+            --data-dir /srv/tank/${folderName}${counter} \
+            --amount 1000000000000000000000000 \
+            --chain-id ${chainID} \
+            --stake-manager ${stakeManagerAddr} \
+            --native-root-token ${rootERC20} \
+            --jsonrpc http://127.0.0.1:8545
+
+        ((counter++))
+    done
+
+    polygon-edge polybft supernet \
+        --private-key aa75e9a7d427efc732f8e4f1a5b7646adcc61fd5bae40f80d13c8419c9f43d6d \
+        --genesis /srv/tank/configs/genesis.json \
+        --supernet-manager ${customSupernetManagerAddr} \
+        --stake-manager ${stakeManagerAddr} \
+        --finalize-genesis-set \
+        --enable-staking \
+        --jsonrpc http://127.0.0.1:8545
+
+    # Specify rootchain address in genesis
+    jq --arg a "http://10.1.1.50:18545" '.params.engine.polybft.bridge.jsonRPCEndpoint = $a' /srv/tank/configs/genesis.json > "tmp" && mv tmp /srv/tank/configs/genesis.json
+
+    az keyvault secret set --vault-name $vaultName --name genesis --file /srv/tank/configs/genesis.json
+}
+
+generateValidators $validatorsAmount
+initRootchain $validatorsAmount

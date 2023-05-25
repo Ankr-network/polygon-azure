@@ -71,7 +71,7 @@ param explorerAvailabilityZones string = ''
 // this is used to ensure uniqueness to naming (making it non-deterministic)
 param rutcValue string = utcNow()
 
-var polygonVersion = '0.8.1'
+var polygonVersion = '0.9.0'
 
 var blockscoutVersion = '4.1.5'
 
@@ -121,30 +121,30 @@ resource akv 'Microsoft.KeyVault/vaults@2022-07-01' = {
   }
 }
 
-resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: '${uniqueString(resourceGroup().id)}dpy'
-  location: location
-  kind: 'AzureCLI'
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities:{
-      '${managedIdentity.id}': {}
-    }
-  }
+// resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+//   name: '${uniqueString(resourceGroup().id)}dpy'
+//   location: location
+//   kind: 'AzureCLI'
+//   identity: {
+//     type: 'UserAssigned'
+//     userAssignedIdentities:{
+//       '${managedIdentity.id}': {}
+//     }
+//   }
   
-  properties: {
-    arguments: '${managedIdentity.id} ${akv.name} ${(rpcEnabled ? 2 : 0)} ${(indexerEnabled ? 2 : 0)} ${polygonVersion} ${premineAmount}'
-    forceUpdateTag: '1'
-    containerSettings: {
-      containerGroupName: '${uniqueString(resourceGroup().id)}ci1'
-    }
-    primaryScriptUri: 'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/deploy.sh'
-    timeout: 'PT30M'
-    cleanupPreference: 'OnSuccess'
-    azCliVersion: '2.28.0'
-    retentionInterval: 'P1D'
-  }
-}
+//   properties: {
+//     arguments: '${managedIdentity.id} ${akv.name} ${(rpcEnabled ? 2 : 0)} ${(indexerEnabled ? 2 : 0)} ${polygonVersion}'
+//     forceUpdateTag: '1'
+//     containerSettings: {
+//       containerGroupName: '${uniqueString(resourceGroup().id)}ci1'
+//     }
+//     primaryScriptUri: 'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/deploy.sh'
+//     timeout: 'PT30M'
+//     cleanupPreference: 'OnSuccess'
+//     azCliVersion: '2.28.0'
+//     retentionInterval: 'P1D'
+//   }
+// }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
   name: '${uniqueString(resourceGroup().id)}vnet'
@@ -364,9 +364,6 @@ resource lb 'Microsoft.Network/loadBalancers@2022-07-01' = {
 
 module devVmModule 'modules/devVm.bicep' = {
   name: 'devDeploy'
-  dependsOn: [
-    deploymentScript
-  ]
   params: {
     location: location
     vmSize: devVmSize
@@ -385,7 +382,6 @@ module devVmModule 'modules/devVm.bicep' = {
 module validatorVmModule 'modules/validatorVm.bicep' = {
   name: 'validatorDeploy'
   dependsOn: [
-    deploymentScript
     devVmModule
   ]
   params: {
@@ -408,7 +404,7 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
 module rpcVmModule 'modules/rpcVm.bicep' = if (rpcEnabled) {
   name: 'rpcDeploy'
   dependsOn: [
-    deploymentScript
+    validatorVmModule
   ]
   params: {
     location: location
@@ -431,7 +427,7 @@ module rpcVmModule 'modules/rpcVm.bicep' = if (rpcEnabled) {
 module idxVmModule 'modules/idxVm.bicep' = if (indexerEnabled) {
   name: 'idxDeploy'
   dependsOn: [
-    deploymentScript
+    validatorVmModule
   ]
   params: {
     location: location
