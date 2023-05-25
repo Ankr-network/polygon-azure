@@ -7,10 +7,7 @@ function installDependecies(){
     # Install dependencies
     mkdir -p /srv/tank
     sudo chown -R azureuser:sudo /srv/tank
-
-    sudo apt-get update
-    sudo apt-get install ncat \
-        jq -y
+    
 
     cd ~/
     mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v0.9.0/polygon-edge_0.9.0_linux_amd64.tar.gz && tar xvf polygon-edge_0.9.0_linux_amd64.tar.gz
@@ -45,6 +42,9 @@ function installDependecies(){
 
     # Install Azure CLI
     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    sudo apt install ncat -y
+    sudo apt install jq -y
 
 }
 
