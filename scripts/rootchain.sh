@@ -8,8 +8,9 @@ function installDependecies(){
     mkdir -p /srv/tank
     sudo chown -R azureuser:sudo /srv/tank
 
-    sudo apt update
-    sudo apt install ncat jq wget -y
+    sudo apt-get update
+    sudo apt-get install ncat \
+        jq -y
 
     cd ~/
     mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v0.9.0/polygon-edge_0.9.0_linux_amd64.tar.gz && tar xvf polygon-edge_0.9.0_linux_amd64.tar.gz
