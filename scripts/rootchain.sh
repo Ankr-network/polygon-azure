@@ -5,6 +5,10 @@ validatorsAmount=$3
 
 
 # Install dependencies
+mkdir -p /srv/tank
+sudo chown -R azureuser:sudo /srv/tank
+
+sudo apt update
 sudo apt install ncat jq wget -y
 
 cd ~/

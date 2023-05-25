@@ -5,6 +5,9 @@ nodeId=$3
 
 
 # Install dependencies
+mkdir -p /srv/tank
+sudo chown -R azureuser:sudo /srv/tank
+
 sudo apt update
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash

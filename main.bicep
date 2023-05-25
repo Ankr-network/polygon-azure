@@ -71,7 +71,7 @@ param explorerAvailabilityZones string = ''
 // this is used to ensure uniqueness to naming (making it non-deterministic)
 param rutcValue string = utcNow()
 
-var polygonVersion = '0.9.0'
+var polygonVersion = 'v0.9.0'
 
 var blockscoutVersion = '4.1.5'
 
