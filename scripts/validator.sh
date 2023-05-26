@@ -8,6 +8,7 @@ nodeId=$(( nodeId + 1 ))
 
 # Install dependencies
 sudo apt update
+mkdir -p /srv/tank
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
