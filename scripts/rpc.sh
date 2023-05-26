@@ -18,6 +18,11 @@ az login --identity --username $managedIdentity
 # Install dependecies 
 sudo apt install jq -y
 
+# Install polygon-edge
+cd ~/
+mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v0.9.0/polygon-edge_0.9.0_linux_amd64.tar.gz && tar xvf polygon-edge_0.9.0_linux_amd64.tar.gz
+sudo mv polygon-edge /usr/local/bin/
+
 # Download Keys and genesis file
 # az keyvault secret download --vault-name ${vaultName} --file genesis.json --name genesis
 accountKey=$(az storage account keys list --account-name ${storageAccountName} | jq -r '.[0].value')
