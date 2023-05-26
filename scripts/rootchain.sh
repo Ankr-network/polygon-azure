@@ -161,9 +161,9 @@ function initRootchain() {
         --reward-wallet ${rewardWallet}:1000000 \
         --transactions-allow-list-admin ${allowAddressList} \
         --transactions-allow-list-enabled ${allowAddressList} \
-        --premine ${addressesToPremine}:${amountToPremine} --native-token-config ${nativeTokenConfig}
+        --premine ${addressesToPremine}:${amountToPremine} --native-token-config ${nativeTokenConfig} &> genesis_output.log
 
-    polygon-edge rootchain deploy --genesis /srv/tank/configs/genesis.json --json-rpc http://127.0.0.1:8545 --test
+    polygon-edge rootchain deploy --genesis /srv/tank/configs/genesis.json --json-rpc http://127.0.0.1:8545 --test &> contracts_output.log
 
     rootERC20=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.nativeERC20Address')
     stakeManagerAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.stakeManagerAddr')
@@ -177,7 +177,7 @@ function initRootchain() {
             --native-root-token ${rootERC20} \
             --mint \
             --data-dir /srv/tank/${folderName}${counter} \
-            --amount 1000000000000000000
+            --amount 1000000000000000000 &> fund_${counter}_output.log
         ((counter++))
     done
 
@@ -185,7 +185,7 @@ function initRootchain() {
         --addresses ${validatorAddressesList} \
         --supernet-manager ${customSupernetManagerAddr} \
         --private-key aa75e9a7d427efc732f8e4f1a5b7646adcc61fd5bae40f80d13c8419c9f43d6d \
-        --jsonrpc http://127.0.0.1:8545
+        --jsonrpc http://127.0.0.1:8545 &> whitelist_output.log
 
 
     counter=1
@@ -196,7 +196,7 @@ function initRootchain() {
         polygon-edge polybft register-validator \
             --supernet-manager ${customSupernetManagerAddr} \
             --data-dir /srv/tank/${folderName}${counter} \
-            --jsonrpc http://127.0.0.1:8545
+            --jsonrpc http://127.0.0.1:8545 &> register_${counter}_output.log
 
         # Ignoring error as there is a bug within v0.9.0 of polygon-edge
         polygon-edge polybft stake \
@@ -205,7 +205,7 @@ function initRootchain() {
             --chain-id ${chainID} \
             --stake-manager ${stakeManagerAddr} \
             --native-root-token ${rootERC20} \
-            --jsonrpc http://127.0.0.1:8545 || true
+            --jsonrpc http://127.0.0.1:8545 &> stake_${counter}_output.log
 
         ((counter++))
     done
@@ -217,7 +217,7 @@ function initRootchain() {
         --stake-manager ${stakeManagerAddr} \
         --finalize-genesis-set \
         --enable-staking \
-        --jsonrpc http://127.0.0.1:8545
+        --jsonrpc http://127.0.0.1:8545 &> finalize_output.log
 
     # Specify rootchain address in genesis
     jq --arg a "http://10.1.1.50:18545" '.params.engine.polybft.bridge.jsonRPCEndpoint = $a' /srv/tank/configs/genesis.json > "tmp" && mv tmp /srv/tank/configs/genesis.json

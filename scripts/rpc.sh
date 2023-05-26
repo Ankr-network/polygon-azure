@@ -3,16 +3,15 @@ managedIdentity=$1
 vaultName=$2
 nodeId=$3
 
+nodeId=$(( nodeId + 1 ))
+
 # Install dependencies
-mkdir -p /srv/tank
+mkdir -p /srv/tank/edge-rpc
 sudo chown -R azureuser:sudo /srv/tank
 
 sudo apt update
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-
-nodeId=$(( nodeId + 1 ))
 
 az login --identity --username $managedIdentity
 
