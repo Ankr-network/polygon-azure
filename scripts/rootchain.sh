@@ -2,6 +2,7 @@
 managedIdentity=$1
 vaultName=$2
 validatorsAmount=$3
+storageAccountName=$4
 
 function installDependecies(){
     # Install dependencies
@@ -222,7 +223,9 @@ function initRootchain() {
     # Specify rootchain address in genesis
     jq --arg a "http://10.1.1.50:18545" '.params.engine.polybft.bridge.jsonRPCEndpoint = $a' /srv/tank/configs/genesis.json > "tmp" && mv tmp /srv/tank/configs/genesis.json
 
-    # az keyvault secret set --vault-name $vaultName --name genesis --file /srv/tank/configs/genesis.json
+    accountKey=$(az storage account keys list --account-name ${storageAccountName} | jq -r '.[0].value')
+    az storage blob upload --account-name ${storageAccountName} --account-key ${accountKey}  --container-name configs --name genesis.json --type block -f /srv/tank/configs/genesis.json 
+
 }
 
 generateValidators $validatorsAmount

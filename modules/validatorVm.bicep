@@ -4,6 +4,9 @@ param location string
 @description('AKV name')
 param akvName string
 
+@description('Storage name')
+param strgName string
+
 @description('Subnet id')
 param subnetId string
 
@@ -145,7 +148,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/validator.sh'
       ]
-      commandToExecute: '/bin/bash validator.sh ${managedIdentity} ${akvName} ${e} ${polygonVersion} ${addressesToPremine}'
+      commandToExecute: '/bin/bash validator.sh ${managedIdentity} ${akvName} ${e} ${strgName} ${addressesToPremine}'
     }
   }
 }]

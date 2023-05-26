@@ -30,6 +30,9 @@ param adminPasswordOrKey string
 @description('AKV name')
 param akvName string
 
+@description('Storage name')
+param strgName string
+
 @description('Total nodes')
 param totalNodes int
 
@@ -129,7 +132,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/rootchain.sh'
       ]
-      commandToExecute: '/bin/bash rootchain.sh ${managedIdentity} ${akvName} ${totalNodes} ${polygonVersion}'
+      commandToExecute: '/bin/bash rootchain.sh ${managedIdentity} ${akvName} ${totalNodes} ${strgName}'
     }
   }
 }

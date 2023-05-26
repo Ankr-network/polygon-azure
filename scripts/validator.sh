@@ -2,6 +2,7 @@
 managedIdentity=$1
 vaultName=$2
 nodeId=$3
+storageAccountName=$4
 
 nodeId=$(( nodeId + 1 ))
 
@@ -12,19 +13,20 @@ sudo chown -R azureuser:sudo /srv/tank
 sudo apt update
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-
 az login --identity --username $managedIdentity
+
+# Install dependecies 
+sudo apt install jq -y
 
 # Download Keys and genesis file
 az keyvault secret download --vault-name ${vaultName} --file node${nodeId} --name node${nodeId}
-az keyvault secret download --vault-name ${vaultName} --file genesis.json --name genesis
+
+accountKey=$(az storage account keys list --account-name ${storageAccountName} | jq -r '.[0].value')
+az storage blob download  --account-name ${storageAccountName} --account-key ${accountKey}  --container-name configs --name genesis.json  --file /srv/tank/edge-validator-${nodeId}/genesis.json
 
 # Extract data 
 base64 -d node${nodeId} > data.tar.gz
 tar xvfz data.tar.gz -C /srv/tank
-
-mv genesis.json /srv/tank/edge-validator-${nodeId}/genesis.json
 
 # Launch validator node
 echo "[Unit]

@@ -4,6 +4,9 @@ param location string
 @description('AKV name')
 param akvName string
 
+@description('Storage name')
+param strgName string
+
 @description('Subnet id')
 param subnetId string
 
@@ -147,7 +150,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh'
       ]
-      commandToExecute: '/bin/bash clientDeploy.sh ${managedIdentity} ${akvName} ${int(e)+4} ${polygonVersion}'
+      commandToExecute: '/bin/bash clientDeploy.sh ${managedIdentity} ${akvName} ${int(e)+4} ${strgName}'
     }
   }
 }]

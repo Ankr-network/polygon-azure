@@ -121,6 +121,35 @@ resource akv 'Microsoft.KeyVault/vaults@2022-07-01' = {
   }
 }
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: '${uniqueString(resourceGroup().id)}strg'
+  location: location
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    accessTier: 'Hot'
+  }
+}
+
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2022-09-01' = {
+  name: 'default'
+  parent: storageAccount
+  properties: {
+    defaultServiceVersion: '2020-10-02'
+  }
+}
+
+resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-09-01' = {
+  name: 'configs'
+  parent: blobService
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+
 // resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
 //   name: '${uniqueString(resourceGroup().id)}dpy'
 //   location: location
@@ -371,6 +400,7 @@ module devVmModule 'modules/devVm.bicep' = {
     adminPasswordOrKey: adminPasswordOrKey
     authenticationType: authenticationType
     akvName: akv.name
+    strgName: storageAccount.name
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
@@ -391,6 +421,7 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
     adminPasswordOrKey: adminPasswordOrKey
     authenticationType: authenticationType
     akvName: akv.name
+    strgName: storageAccount.name
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
@@ -413,6 +444,7 @@ module rpcVmModule 'modules/rpcVm.bicep' = if (rpcEnabled) {
     adminPasswordOrKey: adminPasswordOrKey
     authenticationType: authenticationType
     akvName: akv.name
+    strgName: storageAccount.name
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
@@ -436,6 +468,7 @@ module idxVmModule 'modules/idxVm.bicep' = if (indexerEnabled) {
     adminPasswordOrKey: adminPasswordOrKey
     authenticationType: authenticationType
     akvName: akv.name
+    strgName: storageAccount.name
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
