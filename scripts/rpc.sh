@@ -7,10 +7,9 @@ storageAccountName=$4
 nodeId=$(( nodeId + 1 ))
 
 # Install dependencies
-mkdir -p /srv/tank/edge-rpc
-sudo chown -R azureuser:sudo /srv/tank
-
 sudo apt update
+mkdir -p /srv/tank/edge-rpc
+
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 az login --identity --username $managedIdentity

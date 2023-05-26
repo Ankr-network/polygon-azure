@@ -112,7 +112,8 @@ function generateValidators() {
     i=1
     while [ $i -le $amountOfValidators ]
     do
-        tar -czvf data${i}.tar.gz /srv/tank/${folderName}${i}
+        cd /srv/tank
+        tar -czvf data${i}.tar.gz ./${folderName}${i}
         base64 data$i.tar.gz > node$i
         az keyvault secret set --vault-name $vaultName --name node$i --file node$i
         ((i++))
