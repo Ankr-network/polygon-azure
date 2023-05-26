@@ -198,13 +198,14 @@ function initRootchain() {
             --data-dir /srv/tank/${folderName}${counter} \
             --jsonrpc http://127.0.0.1:8545
 
+        # Ignoring error as there is a bug within v0.9.0 of polygon-edge
         polygon-edge polybft stake \
             --data-dir /srv/tank/${folderName}${counter} \
             --amount 1000000000000000000000000 \
             --chain-id ${chainID} \
             --stake-manager ${stakeManagerAddr} \
             --native-root-token ${rootERC20} \
-            --jsonrpc http://127.0.0.1:8545
+            --jsonrpc http://127.0.0.1:8545 || true
 
         ((counter++))
     done
