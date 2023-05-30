@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.16.2.56959",
-      "templateHash": "18083105693180725957"
+      "version": "0.17.1.54307",
+      "templateHash": "2728670392942408928"
     }
   },
   "parameters": {
@@ -61,9 +61,37 @@
         "description": "Validator VM availability zones"
       }
     },
+    "validatorVmAmount": {
+      "type": "int",
+      "defaultValue": 4,
+      "maxValue": 10,
+      "minValue": 4,
+      "metadata": {
+        "description": "Validator VM amount"
+      }
+    },
+    "addressesToPremine": {
+      "type": "object",
+      "metadata": {
+        "addresses": [
+          {
+            "address": "0x3383e0EbB44d2929abD654cFe4DF52C818af3230",
+            "tokenAmount": "1000"
+          }
+        ],
+        "description": "Addresses and the amount of tokens to premine."
+      }
+    },
+    "premineAmount": {
+      "type": "int",
+      "defaultValue": 100,
+      "metadata": {
+        "description": "Premine amount for validators"
+      }
+    },
     "rpcEnabled": {
       "type": "bool",
-      "defaultValue": false,
+      "defaultValue": true,
       "metadata": {
         "description": "RPC enabled"
       }
@@ -103,13 +131,67 @@
         "description": "Indexer VM availability zones"
       }
     },
+    "explorerEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Explorer enabled"
+      }
+    },
+    "explorerVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D4s_v4",
+      "metadata": {
+        "description": "Explorer VM size"
+      }
+    },
+    "explorerAvailabilityZones": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Explorer VM availability zones"
+      }
+    },
+    "tokenFullName": {
+      "type": "string",
+      "defaultValue": "SuperTestCoin",
+      "maxLength": 24,
+      "minLength": 3,
+      "metadata": {
+        "description": "Token Full Name"
+      }
+    },
+    "tokenSymbol": {
+      "type": "string",
+      "defaultValue": "STC",
+      "maxLength": 6,
+      "minLength": 2,
+      "metadata": {
+        "description": "Token Symbol"
+      }
+    },
+    "blockGasLimit": {
+      "type": "int",
+      "defaultValue": 10000000,
+      "metadata": {
+        "description": "The maximum amount of gas used by all transactions in a block"
+      }
+    },
+    "epochSize": {
+      "type": "int",
+      "defaultValue": 10,
+      "metadata": {
+        "description": "Epoch size"
+      }
+    },
     "rutcValue": {
       "type": "string",
       "defaultValue": "[utcNow()]"
     }
   },
   "variables": {
-    "polygonVersion": "0.8.1",
+    "polygonVersion": "v0.9.0",
+    "blockscoutVersion": "4.1.5",
     "loadBalancerName": "[format('{0}lb', uniqueString(resourceGroup().id))]",
     "roleId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
   },
@@ -162,32 +244,38 @@
       ]
     },
     {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "[format('{0}dpy', uniqueString(resourceGroup().id))]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}strg', uniqueString(resourceGroup().id))]",
       "location": "[parameters('location')]",
-      "kind": "AzureCLI",
-      "identity": {
-        "type": "UserAssigned",
-        "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id))))]": {}
-        }
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
       },
       "properties": {
-        "arguments": "[format('{0} {1} {2} {3} {4}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id))), format('a{0}akv', uniqueString(resourceGroup().id)), if(parameters('rpcEnabled'), 2, 0), if(parameters('indexerEnabled'), 2, 0), variables('polygonVersion'))]",
-        "forceUpdateTag": "1",
-        "containerSettings": {
-          "containerGroupName": "[format('{0}ci1', uniqueString(resourceGroup().id))]"
-        },
-        "primaryScriptUri": "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/deploy.sh",
-        "timeout": "PT30M",
-        "cleanupPreference": "OnSuccess",
-        "azCliVersion": "2.28.0",
-        "retentionInterval": "P1D"
+        "accessTier": "Hot"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', format('{0}strg', uniqueString(resourceGroup().id)), 'default')]",
+      "properties": {
+        "defaultServiceVersion": "2020-10-02"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.KeyVault/vaults', format('a{0}akv', uniqueString(resourceGroup().id)))]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', format('{0}strg', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}/{2}', format('{0}strg', uniqueString(resourceGroup().id)), 'default', 'configs')]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', format('{0}strg', uniqueString(resourceGroup().id)), 'default')]"
       ]
     },
     {
@@ -225,10 +313,23 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "sourceAddressPrefix": "*",
-              "destinationPortRange": "8545",
+              "destinationPortRange": "10001",
               "destinationAddressPrefix": "*",
               "direction": "Inbound",
               "priority": 101
+            }
+          },
+          {
+            "name": "explorer",
+            "properties": {
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationPortRange": "4010",
+              "destinationAddressPrefix": "*",
+              "direction": "Inbound",
+              "priority": 111
             }
           }
         ]
@@ -238,6 +339,20 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-07-01",
       "name": "[format('{0}pipidx', uniqueString(resourceGroup().id))]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-07-01",
+      "name": "[format('{0}pipexp', uniqueString(resourceGroup().id))]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard",
@@ -290,6 +405,15 @@
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}pipidx', uniqueString(resourceGroup().id)))]"
               }
             }
+          },
+          {
+            "name": "lbexpfe",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}pipexp', uniqueString(resourceGroup().id)))]"
+              }
+            }
           }
         ],
         "backendAddressPools": [
@@ -298,6 +422,9 @@
           },
           {
             "name": "lbidxbe"
+          },
+          {
+            "name": "lbexpbe"
           }
         ],
         "loadBalancingRules": [
@@ -314,8 +441,8 @@
                 "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('loadBalancerName'), 'lbprobe')]"
               },
               "protocol": "Tcp",
-              "frontendPort": 8545,
-              "backendPort": 8545,
+              "frontendPort": 10001,
+              "backendPort": 10001,
               "idleTimeoutInMinutes": 15
             }
           },
@@ -332,8 +459,26 @@
                 "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('loadBalancerName'), 'lbprobe')]"
               },
               "protocol": "Tcp",
-              "frontendPort": 8545,
-              "backendPort": 8545,
+              "frontendPort": 10001,
+              "backendPort": 10001,
+              "idleTimeoutInMinutes": 15
+            }
+          },
+          {
+            "name": "lbexprule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('loadBalancerName'), 'lbexpfe')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'lbexpbe')]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('loadBalancerName'), 'lbexpprobe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 4010,
+              "backendPort": 4010,
               "idleTimeoutInMinutes": 15
             }
           }
@@ -343,7 +488,16 @@
             "name": "lbprobe",
             "properties": {
               "protocol": "Tcp",
-              "port": 8545,
+              "port": 10001,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          },
+          {
+            "name": "lbexpprobe",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 4010,
               "intervalInSeconds": 5,
               "numberOfProbes": 2
             }
@@ -351,6 +505,7 @@
         ]
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}pipexp', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}pipidx', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}piprpc', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id)))]"
@@ -384,6 +539,9 @@
           "akvName": {
             "value": "[format('a{0}akv', uniqueString(resourceGroup().id))]"
           },
+          "strgName": {
+            "value": "[format('{0}strg', uniqueString(resourceGroup().id))]"
+          },
           "managedIdentity": {
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]"
           },
@@ -394,10 +552,22 @@
             "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id))), '2022-07-01').subnets[0].id]"
           },
           "totalNodes": {
-            "value": 4
+            "value": "[parameters('validatorVmAmount')]"
           },
           "polygonVersion": {
             "value": "[variables('polygonVersion')]"
+          },
+          "tokenFullName": {
+            "value": "[parameters('tokenFullName')]"
+          },
+          "tokenSymbol": {
+            "value": "[parameters('tokenSymbol')]"
+          },
+          "blockGasLimit": {
+            "value": "[parameters('blockGasLimit')]"
+          },
+          "epochSize": {
+            "value": "[parameters('epochSize')]"
           }
         },
         "template": {
@@ -406,8 +576,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.16.2.56959",
-              "templateHash": "15839651698632364743"
+              "version": "0.17.1.54307",
+              "templateHash": "1732245017332536870"
             }
           },
           "parameters": {
@@ -469,6 +639,12 @@
                 "description": "AKV name"
               }
             },
+            "strgName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage name"
+              }
+            },
             "totalNodes": {
               "type": "int",
               "metadata": {
@@ -479,6 +655,34 @@
               "type": "string",
               "metadata": {
                 "description": "Polygon version number"
+              }
+            },
+            "tokenFullName": {
+              "type": "string",
+              "maxLength": 24,
+              "minLength": 3,
+              "metadata": {
+                "description": "Token Full Name"
+              }
+            },
+            "tokenSymbol": {
+              "type": "string",
+              "maxLength": 6,
+              "minLength": 2,
+              "metadata": {
+                "description": "Token Symbol"
+              }
+            },
+            "blockGasLimit": {
+              "type": "int",
+              "metadata": {
+                "description": "Block gas limit"
+              }
+            },
+            "epochSize": {
+              "type": "int",
+              "metadata": {
+                "description": "Epoch size"
               }
             }
           },
@@ -581,9 +785,9 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/devDeploy.sh"
+                    "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/rootchain.sh', parameters('polygonVersion'))]"
                   ],
-                  "commandToExecute": "[format('/bin/bash devDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), parameters('totalNodes'), parameters('polygonVersion'))]"
+                  "commandToExecute": "[format('/bin/bash rootchain.sh {0} {1} {2} {3} \"{4}:{5}:18\" {6} {7}', parameters('managedIdentity'), parameters('akvName'), parameters('totalNodes'), parameters('strgName'), parameters('tokenFullName'), parameters('tokenSymbol'), parameters('blockGasLimit'), parameters('epochSize'))]"
                 }
               },
               "dependsOn": [
@@ -595,9 +799,9 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', format('a{0}akv', uniqueString(resourceGroup().id)))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', format('{0}dpy', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}nsg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', format('{0}strg', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id)))]"
       ]
     },
@@ -629,6 +833,9 @@
           "akvName": {
             "value": "[format('a{0}akv', uniqueString(resourceGroup().id))]"
           },
+          "strgName": {
+            "value": "[format('{0}strg', uniqueString(resourceGroup().id))]"
+          },
           "managedIdentity": {
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]"
           },
@@ -639,10 +846,13 @@
             "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id))), '2022-07-01').subnets[0].id]"
           },
           "totalNodes": {
-            "value": 4
+            "value": "[parameters('validatorVmAmount')]"
           },
           "availabilityZones": {
             "value": "[parameters('validatorAvailabilityZones')]"
+          },
+          "addressesToPremine": {
+            "value": "[parameters('addressesToPremine')]"
           },
           "polygonVersion": {
             "value": "[variables('polygonVersion')]"
@@ -654,8 +864,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.16.2.56959",
-              "templateHash": "11634222873539186496"
+              "version": "0.17.1.54307",
+              "templateHash": "8871829573062832018"
             }
           },
           "parameters": {
@@ -669,6 +879,12 @@
               "type": "string",
               "metadata": {
                 "description": "AKV name"
+              }
+            },
+            "strgName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage name"
               }
             },
             "subnetId": {
@@ -687,6 +903,14 @@
               "type": "string",
               "metadata": {
                 "description": "The identity used by the VM"
+              }
+            },
+            "addressesToPremine": {
+              "type": "object",
+              "metadata": {
+                "address": "0x3383e0EbB44d2929abD654cFe4DF52C818af3230",
+                "tokenAmount": "1000",
+                "description": "Addresses and the amount of tokens to premine."
               }
             },
             "vmSize": {
@@ -850,9 +1074,9 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
+                    "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/validator.sh', parameters('polygonVersion'))]"
                   ],
-                  "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('polygonVersion'))]"
+                  "commandToExecute": "[format('/bin/bash validator.sh {0} {1} {2} {3} {4}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('strgName'), parameters('addressesToPremine'))]"
                 }
               },
               "dependsOn": [
@@ -864,10 +1088,10 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', format('a{0}akv', uniqueString(resourceGroup().id)))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', format('{0}dpy', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Resources/deployments', 'devDeploy')]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}nsg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', format('{0}strg', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id)))]"
       ]
     },
@@ -900,6 +1124,9 @@
           "akvName": {
             "value": "[format('a{0}akv', uniqueString(resourceGroup().id))]"
           },
+          "strgName": {
+            "value": "[format('{0}strg', uniqueString(resourceGroup().id))]"
+          },
           "managedIdentity": {
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]"
           },
@@ -931,8 +1158,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.16.2.56959",
-              "templateHash": "493995113338777292"
+              "version": "0.17.1.54307",
+              "templateHash": "15025664454106076176"
             }
           },
           "parameters": {
@@ -946,6 +1173,12 @@
               "type": "string",
               "metadata": {
                 "description": "AKV name"
+              }
+            },
+            "strgName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage name"
               }
             },
             "subnetId": {
@@ -1047,14 +1280,14 @@
               },
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2022-07-01",
-              "name": "[format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 4))]",
+              "name": "[format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10))]",
               "location": "[parameters('location')]",
               "properties": {
                 "ipConfigurations": [
                   {
                     "name": "ipconfig1",
                     "properties": {
-                      "privateIPAddress": "[format('10.1.1.{0}', add(int(range(0, parameters('totalNodes'))[copyIndex()]), 15))]",
+                      "privateIPAddress": "[format('10.1.1.{0}', add(int(range(0, parameters('totalNodes'))[copyIndex()]), 21))]",
                       "privateIPAllocationMethod": "Static",
                       "subnet": {
                         "id": "[parameters('subnetId')]"
@@ -1082,7 +1315,7 @@
               },
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2022-11-01",
-              "name": "[format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 4))]",
+              "name": "[format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10))]",
               "location": "[parameters('location')]",
               "identity": {
                 "type": "UserAssigned",
@@ -1117,15 +1350,15 @@
                 "networkProfile": {
                   "networkInterfaces": [
                     {
-                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 4)))]"
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 10)))]"
                     }
                   ]
                 }
               },
               "zones": "[if(equals(parameters('availabilityZones'), ''), createArray(), createArray(string(parameters('availabilityZones'))))]",
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 4)))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 4)))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 10)))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 10)))]"
               ]
             },
             {
@@ -1135,7 +1368,7 @@
               },
               "type": "Microsoft.Compute/virtualMachines/extensions",
               "apiVersion": "2022-11-01",
-              "name": "[format('{0}/{1}', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 4)), format('{0}vmext{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 4)))]",
+              "name": "[format('{0}/{1}', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 10)), format('{0}vmext{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10)))]",
               "location": "[parameters('location')]",
               "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -1144,13 +1377,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
+                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/rpc.sh"
                   ],
-                  "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 4), parameters('polygonVersion'))]"
+                  "commandToExecute": "[format('/bin/bash rpc.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10), parameters('strgName'))]"
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 4)))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 10)))]"
               ]
             }
           ]
@@ -1158,9 +1391,10 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', format('a{0}akv', uniqueString(resourceGroup().id)))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', format('{0}dpy', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}nsg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', format('{0}strg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', 'validatorDeploy')]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id)))]"
       ]
     },
@@ -1193,6 +1427,9 @@
           "akvName": {
             "value": "[format('a{0}akv', uniqueString(resourceGroup().id))]"
           },
+          "strgName": {
+            "value": "[format('{0}strg', uniqueString(resourceGroup().id))]"
+          },
           "managedIdentity": {
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]"
           },
@@ -1224,8 +1461,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.16.2.56959",
-              "templateHash": "14962400521573070349"
+              "version": "0.17.1.54307",
+              "templateHash": "4760733752722954890"
             }
           },
           "parameters": {
@@ -1239,6 +1476,12 @@
               "type": "string",
               "metadata": {
                 "description": "AKV name"
+              }
+            },
+            "strgName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage name"
               }
             },
             "subnetId": {
@@ -1340,14 +1583,14 @@
               },
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2022-07-01",
-              "name": "[format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6))]",
+              "name": "[format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 20))]",
               "location": "[parameters('location')]",
               "properties": {
                 "ipConfigurations": [
                   {
                     "name": "ipconfig1",
                     "properties": {
-                      "privateIPAddress": "[format('10.1.1.{0}', add(int(range(0, parameters('totalNodes'))[copyIndex()]), 17))]",
+                      "privateIPAddress": "[format('10.1.1.{0}', add(int(range(0, parameters('totalNodes'))[copyIndex()]), 31))]",
                       "privateIPAllocationMethod": "Static",
                       "subnet": {
                         "id": "[parameters('subnetId')]"
@@ -1375,7 +1618,7 @@
               },
               "type": "Microsoft.Compute/virtualMachines",
               "apiVersion": "2022-11-01",
-              "name": "[format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6))]",
+              "name": "[format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 20))]",
               "location": "[parameters('location')]",
               "identity": {
                 "type": "UserAssigned",
@@ -1410,15 +1653,15 @@
                 "networkProfile": {
                   "networkInterfaces": [
                     {
-                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 6)))]"
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 20)))]"
                     }
                   ]
                 }
               },
               "zones": "[if(equals(parameters('availabilityZones'), ''), createArray(), createArray(string(parameters('availabilityZones'))))]",
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 6)))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 6)))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 20)))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 20)))]"
               ]
             },
             {
@@ -1428,7 +1671,7 @@
               },
               "type": "Microsoft.Compute/virtualMachines/extensions",
               "apiVersion": "2022-11-01",
-              "name": "[format('{0}/{1}', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 6)), format('{0}vmext{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6)))]",
+              "name": "[format('{0}/{1}', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 20)), format('{0}vmext{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 20)))]",
               "location": "[parameters('location')]",
               "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -1439,11 +1682,11 @@
                   "fileUris": [
                     "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
                   ],
-                  "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6), parameters('polygonVersion'))]"
+                  "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6), parameters('strgName'))]"
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 6)))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 20)))]"
               ]
             }
           ]
@@ -1451,9 +1694,293 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', format('a{0}akv', uniqueString(resourceGroup().id)))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', format('{0}dpy', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}nsg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', format('{0}strg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', 'validatorDeploy')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id)))]"
+      ]
+    },
+    {
+      "condition": "[parameters('explorerEnabled')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "explorerDeploy",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vmSize": {
+            "value": "[parameters('explorerVmSize')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPasswordOrKey": {
+            "value": "[parameters('adminPasswordOrKey')]"
+          },
+          "authenticationType": {
+            "value": "[parameters('authenticationType')]"
+          },
+          "managedIdentity": {
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]"
+          },
+          "nsg": {
+            "value": "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}nsg', uniqueString(resourceGroup().id)))]"
+          },
+          "subnetId": {
+            "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id))), '2022-07-01').subnets[0].id]"
+          },
+          "totalNodes": {
+            "value": 1
+          },
+          "availabilityZones": {
+            "value": "[parameters('explorerAvailabilityZones')]"
+          },
+          "loadBalancerName": {
+            "value": "[variables('loadBalancerName')]"
+          },
+          "loadBalancerBackendName": {
+            "value": "lbexpbe"
+          },
+          "blockscoutVersion": {
+            "value": "[variables('blockscoutVersion')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.17.1.54307",
+              "templateHash": "18366636207021439387"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure region that will be targeted for resources."
+              }
+            },
+            "subnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "Subnet id"
+              }
+            },
+            "loadBalancerName": {
+              "type": "string",
+              "metadata": {
+                "description": "Load balancer name"
+              }
+            },
+            "loadBalancerBackendName": {
+              "type": "string",
+              "metadata": {
+                "description": "Load balancer backend name"
+              }
+            },
+            "nsg": {
+              "type": "string",
+              "metadata": {
+                "description": "Network security group id"
+              }
+            },
+            "managedIdentity": {
+              "type": "string",
+              "metadata": {
+                "description": "The identity used by the VM"
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "metadata": {
+                "description": "The size of the virtual machine"
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "Username for the VM"
+              }
+            },
+            "authenticationType": {
+              "type": "string",
+              "allowedValues": [
+                "sshPublicKey",
+                "password"
+              ],
+              "metadata": {
+                "description": "Type of authentication to use for the VM"
+              }
+            },
+            "adminPasswordOrKey": {
+              "type": "securestring",
+              "metadata": {
+                "description": "SSH key or password for the VM"
+              }
+            },
+            "availabilityZones": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Validator VM availability zones"
+              }
+            },
+            "totalNodes": {
+              "type": "int",
+              "metadata": {
+                "description": "Total nodes"
+              }
+            },
+            "blockscoutVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Blockscout version number"
+              }
+            }
+          },
+          "variables": {
+            "linuxConfiguration": {
+              "disablePasswordAuthentication": true,
+              "ssh": {
+                "publicKeys": [
+                  {
+                    "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('adminUsername'))]",
+                    "keyData": "[parameters('adminPasswordOrKey')]"
+                  }
+                ]
+              }
+            }
+          },
+          "resources": [
+            {
+              "copy": {
+                "name": "nic",
+                "count": "[length(range(0, parameters('totalNodes')))]"
+              },
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2022-07-01",
+              "name": "[format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 30))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAddress": "[format('10.1.1.{0}', add(int(range(0, parameters('totalNodes'))[copyIndex()]), 41))]",
+                      "privateIPAllocationMethod": "Static",
+                      "subnet": {
+                        "id": "[parameters('subnetId')]"
+                      },
+                      "primary": true,
+                      "privateIPAddressVersion": "IPv4",
+                      "loadBalancerBackendAddressPools": [
+                        {
+                          "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancerName'), parameters('loadBalancerBackendName'))]"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "enableAcceleratedNetworking": true,
+                "networkSecurityGroup": {
+                  "id": "[parameters('nsg')]"
+                }
+              }
+            },
+            {
+              "copy": {
+                "name": "vm",
+                "count": "[length(range(0, parameters('totalNodes')))]"
+              },
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 30))]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('managedIdentity'))]": {}
+                }
+              },
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "Canonical",
+                    "offer": "0001-com-ubuntu-server-focal",
+                    "sku": "20_04-lts-gen2",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                      "storageAccountType": "Premium_LRS"
+                    }
+                  }
+                },
+                "osProfile": {
+                  "computerName": "[format('{0}vm', uniqueString(resourceGroup().id))]",
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "adminPassword": "[parameters('adminPasswordOrKey')]",
+                  "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), null(), variables('linuxConfiguration'))]"
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 30)))]"
+                    }
+                  ]
+                }
+              },
+              "zones": "[if(equals(parameters('availabilityZones'), ''), createArray(), createArray(string(parameters('availabilityZones'))))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 30)))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}nic{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 30)))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "vmExtension",
+                "count": "[length(range(0, parameters('totalNodes')))]"
+              },
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}/{1}', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 30)), format('{0}vmext{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 30)))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "fileUris": [
+                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/develop/scripts/explorerDeploy.sh"
+                  ],
+                  "commandToExecute": "/bin/bash explorerDeploy.sh"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', format('{0}vm{1}', uniqueString(resourceGroup().id), add(int(range(0, parameters('totalNodes'))[range(0, parameters('totalNodes'))[copyIndex()]]), 30)))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}mi', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}nsg', uniqueString(resourceGroup().id)))]",
+        "[resourceId('Microsoft.Resources/deployments', 'rpcDeploy')]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id)))]"
       ]
     }

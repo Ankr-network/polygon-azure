@@ -4,6 +4,23 @@ vaultName=$2
 validatorsAmount=$3
 storageAccountName=$4
 
+
+nativeTokenConfig=$5
+blockGasLimit=$6
+epochSize=$7
+
+
+
+# while [ $# -gt 0 ]; do
+
+#    if [[ $1 == *"--"* ]]; then
+#         v="${1/--/}"
+#         declare $v="$2"
+#    fi
+
+#   shift
+# done
+
 function installDependecies(){
     # Install dependencies
     mkdir -p /srv/tank
@@ -128,7 +145,9 @@ function initRootchain() {
     rewardWallet="0x3383e0EbB44d2929abD654cFe4DF52C818af3230"
     addressesToPremine="0x3383e0EbB44d2929abD654cFe4DF52C818af3230"
     amountToPremine=1000000000000000000000
-    nativeTokenConfig="SuperTestCoin:STC:18"
+    # nativeTokenConfig="SuperTestCoin:STC:18"
+    # blockGasLimit=10000000
+    # epochSize=10
 
     # Assemble the command for generating genesis
     validatorCommandLine=""
@@ -157,7 +176,7 @@ function initRootchain() {
 
     mkdir -p /srv/tank/configs
 
-    polygon-edge genesis --dir /srv/tank/configs/genesis.json --block-gas-limit 10000000 --epoch-size 10 \
+    polygon-edge genesis --dir /srv/tank/configs/genesis.json --block-gas-limit ${blockGasLimit} --epoch-size ${epochSize} \
         ${validatorCommandLine} \
         --consensus polybft \
         --reward-wallet ${rewardWallet}:1000000 \

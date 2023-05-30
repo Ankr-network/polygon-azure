@@ -24,6 +24,11 @@ param validatorVmSize string = 'Standard_D4s_v4'
 @description('Validator VM availability zones')
 param validatorAvailabilityZones string = ''
 
+@description('Validator VM amount')
+@minValue(4)
+@maxValue(10)
+param validatorVmAmount int = 4
+
 @description('Addresses and the amount of tokens to premine.')
 @metadata({
   addresses: [
@@ -35,11 +40,8 @@ param validatorAvailabilityZones string = ''
 })
 param addressesToPremine object
 
-@description('Premine amount for validators')
-param premineAmount int = 100
-
-@description('The maximum amount of gas used by all transactions in a block')
-param blockGasLimit int = 10000000
+// @description('Premine amount for validators')
+// param premineAmount int = 100
 
 @description('RPC enabled')
 param rpcEnabled bool = true
@@ -68,12 +70,28 @@ param explorerVmSize string = 'Standard_D4s_v4'
 @description('Explorer VM availability zones')
 param explorerAvailabilityZones string = ''
 
+@description('Token Full Name')
+@minLength(3)
+@maxLength(24)
+param tokenFullName string = 'SuperTestCoin'
+
+@description('Token Symbol')
+@minLength(2)
+@maxLength(6)
+param tokenSymbol string = 'STC'
+
+@description('The maximum amount of gas used by all transactions in a block')
+param blockGasLimit int = 10000000
+
+@description('Epoch size')
+param epochSize int = 10
+
 // this is used to ensure uniqueness to naming (making it non-deterministic)
 param rutcValue string = utcNow()
 
 var polygonVersion = 'v0.9.0'
 
-var blockscoutVersion = '4.1.5'
+// var blockscoutVersion = '4.1.5'
 
 var loadBalancerName = '${uniqueString(resourceGroup().id)}lb'
 
@@ -149,31 +167,6 @@ resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/container
   }
 }
 
-
-// resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-//   name: '${uniqueString(resourceGroup().id)}dpy'
-//   location: location
-//   kind: 'AzureCLI'
-//   identity: {
-//     type: 'UserAssigned'
-//     userAssignedIdentities:{
-//       '${managedIdentity.id}': {}
-//     }
-//   }
-  
-//   properties: {
-//     arguments: '${managedIdentity.id} ${akv.name} ${(rpcEnabled ? 2 : 0)} ${(indexerEnabled ? 2 : 0)} ${polygonVersion}'
-//     forceUpdateTag: '1'
-//     containerSettings: {
-//       containerGroupName: '${uniqueString(resourceGroup().id)}ci1'
-//     }
-//     primaryScriptUri: 'https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/deploy.sh'
-//     timeout: 'PT30M'
-//     cleanupPreference: 'OnSuccess'
-//     azCliVersion: '2.28.0'
-//     retentionInterval: 'P1D'
-//   }
-// }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
   name: '${uniqueString(resourceGroup().id)}vnet'
@@ -404,8 +397,12 @@ module devVmModule 'modules/devVm.bicep' = {
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
-    totalNodes: 4
+    totalNodes: validatorVmAmount
     polygonVersion: polygonVersion
+    tokenFullName: tokenFullName
+    tokenSymbol: tokenSymbol
+    blockGasLimit: blockGasLimit
+    epochSize: epochSize
   }
 }
 
@@ -425,7 +422,7 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
-    totalNodes: 4
+    totalNodes: validatorVmAmount
     availabilityZones: validatorAvailabilityZones
     addressesToPremine: addressesToPremine
     polygonVersion: polygonVersion
@@ -498,7 +495,6 @@ module explorerVmModule 'modules/explorerVm.bicep' = if (explorerEnabled) {
     availabilityZones: explorerAvailabilityZones
     loadBalancerName: loadBalancerName
     loadBalancerBackendName: 'lbexpbe'
-    blockscoutVersion: blockscoutVersion
   }
 }
 // output rpcAddress string = pipRpc.properties.ipAddress

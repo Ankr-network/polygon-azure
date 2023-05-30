@@ -54,6 +54,30 @@
                             }
                         }
                     },
+                    {
+                        "name": "tokenFullName",
+                        "type": "Microsoft.Common.Selector",
+                        "visible": true,
+                        "label": "Full Token Name"
+                    },
+                    {
+                        "name": "tokenSymbol",
+                        "type": "Microsoft.Common.Selector",
+                        "visible": true,
+                        "label": "Full Token Name"
+                    },
+                    {
+                        "name": "blockGasLimit",
+                        "type": "Microsoft.Common.Selector",
+                        "visible": true,
+                        "label": "Full Token Name"
+                    },
+                    {
+                        "name": "epochSize",
+                        "type": "Microsoft.Common.Selector",
+                        "visible": true,
+                        "label": "Full Token Name"
+                    },
 					{
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
@@ -340,6 +364,14 @@
             "devVmSize": "[steps('l1Config').vmSize]",
             "validatorVmSize": "[steps('validatorConfig').vmSize]",
             "validatorAvailabilityZones": "[steps('validatorConfig').availabilityZones]",
+
+            "validatorVmAmount": "[steps('validatorConfig').vmSize.count]",
+            "tokenFullName": "[steps('validatorConfig').tokenFullName]",
+            "tokenSymbol": "[steps('validatorConfig').tokenSymbol]",
+            "blockGasLimit": "[steps('validatorConfig').blockGasLimit]",
+            "epochSize": "[steps('validatorConfig').epochSize]",
+
+
             "rpcEnabled": "[steps('rpcConfig').rpcNodes]",
             "rpcVmSize": "[steps('rpcConfig').vmSize]",
             "rpcAvailabilityZones": "[steps('rpcConfig').availabilityZones]",

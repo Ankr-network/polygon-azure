@@ -39,6 +39,22 @@ param totalNodes int
 @description('Polygon version number')
 param polygonVersion string
 
+@description('Token Full Name')
+@minLength(3)
+@maxLength(24)
+param tokenFullName string
+
+@description('Token Symbol')
+@minLength(2)
+@maxLength(6)
+param tokenSymbol string
+
+@description('Block gas limit')
+param blockGasLimit int
+
+@description('Epoch size')
+param epochSize int
+
 var linuxConfiguration = {
   disablePasswordAuthentication: true
   ssh: {
@@ -132,7 +148,8 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/rootchain.sh'
       ]
-      commandToExecute: '/bin/bash rootchain.sh ${managedIdentity} ${akvName} ${totalNodes} ${strgName}'
+      // /bin/bash rootchain.sh managedIdentity=$1 vaultName=$2 validatorsAmount=$3 storageAccountName=$4 nativeTokenConfig=$5 blockGasLimit=$6 epochSize=$7
+      commandToExecute: '/bin/bash rootchain.sh ${managedIdentity} ${akvName} ${totalNodes} ${strgName} "${tokenFullName}:${tokenSymbol}:18" ${blockGasLimit} ${epochSize}'
     }
   }
 }
