@@ -56,25 +56,25 @@
                     },
                     {
                         "name": "tokenFullName",
-                        "type": "Microsoft.Common.Selector",
+                        "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Full Token Name"
                     },
                     {
                         "name": "tokenSymbol",
-                        "type": "Microsoft.Common.Selector",
+                        "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Full Token Name"
                     },
                     {
                         "name": "blockGasLimit",
-                        "type": "Microsoft.Common.Selector",
+                        "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Full Token Name"
                     },
                     {
                         "name": "epochSize",
-                        "type": "Microsoft.Common.Selector",
+                        "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Full Token Name"
                     },
