@@ -464,7 +464,7 @@
 
             "validatorVmSize": "[steps('validatorConfig').vmSize]",
             "validatorAvailabilityZones": "[steps('validatorConfig').availabilityZones]",
-            "validatorVmAmount": "[steps('validatorConfig').vmSize.count]",
+            "validatorVmAmount": "[steps('validatorConfig').vmCount]",
 
             "tokenFullName": "[steps('validatorConfig').tokenFullName]",
             "tokenSymbol": "[steps('validatorConfig').tokenSymbol]",
