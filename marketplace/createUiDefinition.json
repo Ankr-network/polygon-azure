@@ -89,6 +89,19 @@
                         "label": "Validators amount",
                         "toolTip": "Amount of validators to launch. Default: 4"
                     },
+                    {
+                        "name": "vmCount",
+                        "type": "Microsoft.Common.Slider",
+                        "min": 4,
+                        "max": 10,
+                        "label": "Validators",
+                        "defaultValue": 4,
+                        "toolTip": "Pick the amount of Validators to launch",
+                        "constraints": {
+                            "required": false
+                        },
+                        "visible": true
+                    },
 					{
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
