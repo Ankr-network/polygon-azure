@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "12105413999093499094"
+      "templateHash": "17131592608361721847"
     }
   },
   "parameters": {
@@ -68,18 +68,6 @@
       "minValue": 4,
       "metadata": {
         "description": "Validator VM amount"
-      }
-    },
-    "addressesToPremine": {
-      "type": "object",
-      "metadata": {
-        "addresses": [
-          {
-            "address": "0x3383e0EbB44d2929abD654cFe4DF52C818af3230",
-            "tokenAmount": "1000"
-          }
-        ],
-        "description": "Addresses and the amount of tokens to premine."
       }
     },
     "rpcEnabled": {
@@ -843,9 +831,6 @@
           "availabilityZones": {
             "value": "[parameters('validatorAvailabilityZones')]"
           },
-          "addressesToPremine": {
-            "value": "[parameters('addressesToPremine')]"
-          },
           "polygonVersion": {
             "value": "[variables('polygonVersion')]"
           }
@@ -857,7 +842,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "8871829573062832018"
+              "templateHash": "7382568219375910393"
             }
           },
           "parameters": {
@@ -895,14 +880,6 @@
               "type": "string",
               "metadata": {
                 "description": "The identity used by the VM"
-              }
-            },
-            "addressesToPremine": {
-              "type": "object",
-              "metadata": {
-                "address": "0x3383e0EbB44d2929abD654cFe4DF52C818af3230",
-                "tokenAmount": "1000",
-                "description": "Addresses and the amount of tokens to premine."
               }
             },
             "vmSize": {
@@ -1068,7 +1045,7 @@
                   "fileUris": [
                     "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/validator.sh', parameters('polygonVersion'))]"
                   ],
-                  "commandToExecute": "[format('/bin/bash validator.sh {0} {1} {2} {3} {4}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('strgName'), parameters('addressesToPremine'))]"
+                  "commandToExecute": "[format('/bin/bash validator.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('strgName'))]"
                 }
               },
               "dependsOn": [

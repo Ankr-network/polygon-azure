@@ -29,16 +29,16 @@ param validatorAvailabilityZones string = ''
 @maxValue(10)
 param validatorVmAmount int = 4
 
-@description('Addresses and the amount of tokens to premine.')
-@metadata({
-  addresses: [
-    {
-      address: '0x3383e0EbB44d2929abD654cFe4DF52C818af3230'
-      tokenAmount: '1000'
-    }
-  ]
-})
-param addressesToPremine object
+// @description('Addresses and the amount of tokens to premine.')
+// @metadata({
+//   addresses: [
+//     {
+//       address: '0x3383e0EbB44d2929abD654cFe4DF52C818af3230'
+//       tokenAmount: '1000'
+//     }
+//   ]
+// })
+// param addressesToPremine object
 
 // @description('Premine amount for validators')
 // param premineAmount int = 100
@@ -424,7 +424,6 @@ module validatorVmModule 'modules/validatorVm.bicep' = {
     subnetId: vnet.properties.subnets[0].id
     totalNodes: validatorVmAmount
     availabilityZones: validatorAvailabilityZones
-    addressesToPremine: addressesToPremine
     polygonVersion: polygonVersion
   }
 }

@@ -17,12 +17,12 @@ param nsg string
 param managedIdentity string
 
 
-@description('Addresses and the amount of tokens to premine.')
-@metadata({
-  address: '0x3383e0EbB44d2929abD654cFe4DF52C818af3230'
-  tokenAmount: '1000'
-})
-param addressesToPremine object
+// @description('Addresses and the amount of tokens to premine.')
+// @metadata({
+//   address: '0x3383e0EbB44d2929abD654cFe4DF52C818af3230'
+//   tokenAmount: '1000'
+// })
+// param addressesToPremine object
 
 
 @description('The size of the virtual machine')
@@ -148,7 +148,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/validator.sh'
       ]
-      commandToExecute: '/bin/bash validator.sh ${managedIdentity} ${akvName} ${e} ${strgName} ${addressesToPremine}'
+      commandToExecute: '/bin/bash validator.sh ${managedIdentity} ${akvName} ${e} ${strgName}'
     }
   }
 }]
