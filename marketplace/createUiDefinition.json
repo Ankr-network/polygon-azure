@@ -59,28 +59,35 @@
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Full Token Name",
-                        "toolTip": "Type 1-30 alphanumeric characters"
+                        "toolTip": "Full Token Name. Example: SuperTestCoin"
                     },
                     {
                         "name": "tokenSymbol",
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Token Symbol",
-                        "toolTip": "Type 1-30 alphanumeric characters"
+                        "toolTip": "Token Symbol. Example: STC"
                     },
                     {
                         "name": "blockGasLimit",
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Block gas limit",
-                        "toolTip": "Type 1-30 alphanumeric characters"
+                        "toolTip": "Gas limit for each block mined. Default: 10000000"
                     },
                     {
                         "name": "epochSize",
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Epoch Size",
-                        "toolTip": "Type 1-30 alphanumeric characters"
+                        "toolTip": "Size in blocks of each epoch. Default: 10"
+                    },
+                    {
+                        "name": "vmCount",
+                        "type": "Microsoft.Common.TextBox",
+                        "visible": true,
+                        "label": "Validators amount",
+                        "toolTip": "Amount of validators to launch. Default: 4"
                     },
 					{
                         "name": "vmSize",
@@ -99,7 +106,7 @@
                             "offer": "0001-com-ubuntu-server-focal",
                             "sku": "20_04-lts-gen2"
                         },
-                        "count": 4,
+                        "count": "[steps('validatorConfig').vmCount]",
                         "visible": true
                     },
                     {
