@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "2728670392942408928"
+      "templateHash": "12105413999093499094"
     }
   },
   "parameters": {
@@ -80,13 +80,6 @@
           }
         ],
         "description": "Addresses and the amount of tokens to premine."
-      }
-    },
-    "premineAmount": {
-      "type": "int",
-      "defaultValue": 100,
-      "metadata": {
-        "description": "Premine amount for validators"
       }
     },
     "rpcEnabled": {
@@ -191,7 +184,6 @@
   },
   "variables": {
     "polygonVersion": "v0.9.0",
-    "blockscoutVersion": "4.1.5",
     "loadBalancerName": "[format('{0}lb', uniqueString(resourceGroup().id))]",
     "roleId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
   },
@@ -1159,7 +1151,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "15025664454106076176"
+              "templateHash": "11875056637927446248"
             }
           },
           "parameters": {
@@ -1377,7 +1369,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/rpc.sh"
+                    "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/rpc.sh', parameters('polygonVersion'))]"
                   ],
                   "commandToExecute": "[format('/bin/bash rpc.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10), parameters('strgName'))]"
                 }
@@ -1462,7 +1454,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "4760733752722954890"
+              "templateHash": "10025083101844765616"
             }
           },
           "parameters": {
@@ -1680,7 +1672,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": [
-                    "https://raw.githubusercontent.com/Ankr-network/polygon-azure/main/scripts/clientDeploy.sh"
+                    "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/clientDeploy.sh', parameters('polygonVersion'))]"
                   ],
                   "commandToExecute": "[format('/bin/bash clientDeploy.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 6), parameters('strgName'))]"
                 }
@@ -1747,9 +1739,6 @@
           },
           "loadBalancerBackendName": {
             "value": "lbexpbe"
-          },
-          "blockscoutVersion": {
-            "value": "[variables('blockscoutVersion')]"
           }
         },
         "template": {
@@ -1759,7 +1748,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "18366636207021439387"
+              "templateHash": "10866544035039785394"
             }
           },
           "parameters": {
@@ -1838,12 +1827,6 @@
               "type": "int",
               "metadata": {
                 "description": "Total nodes"
-              }
-            },
-            "blockscoutVersion": {
-              "type": "string",
-              "metadata": {
-                "description": "Blockscout version number"
               }
             }
           },
