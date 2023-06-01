@@ -82,19 +82,6 @@
                         "label": "Epoch Size",
                         "toolTip": "Size in blocks of each epoch. Default: 10"
                     },
-                    {
-                        "name": "vmCount",
-                        "type": "Microsoft.Common.Slider",
-                        "min": 4,
-                        "max": 10,
-                        "label": "Validators",
-                        "defaultValue": 4,
-                        "toolTip": "Pick the amount of Validators to launch",
-                        "constraints": {
-                            "required": false
-                        },
-                        "visible": true
-                    },
 					{
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
@@ -112,7 +99,7 @@
                             "offer": "0001-com-ubuntu-server-focal",
                             "sku": "20_04-lts-gen2"
                         },
-                        "count": "[steps('validatorConfig').vmCount]",
+                        "count": 4,
                         "visible": true
                     },
                     {
@@ -383,7 +370,6 @@
 
             "validatorVmSize": "[steps('validatorConfig').vmSize]",
             "validatorAvailabilityZones": "[steps('validatorConfig').availabilityZones]",
-            "validatorVmAmount": "[steps('validatorConfig').vmCount]",
 
             "tokenFullName": "[steps('validatorConfig').tokenFullName]",
             "tokenSymbol": "[steps('validatorConfig').tokenSymbol]",
