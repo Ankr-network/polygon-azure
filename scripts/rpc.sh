@@ -27,6 +27,8 @@ sudo mv polygon-edge /usr/local/bin/
 accountKey=$(az storage account keys list --account-name ${storageAccountName} | jq -r '.[0].value')
 az storage blob download  --account-name ${storageAccountName} --account-key ${accountKey}  --container-name configs --name genesis.json  --file /srv/tank/edge-rpc/genesis.json
 
+# Generate keys in order to launch node
+polygon-edge polybft-secrets --insecure --data-dir /srv/tank/edge-rpc
 
 # Launch RPC node
 echo "[Unit]
