@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "17131592608361721847"
+      "templateHash": "2965604029594518896"
     }
   },
   "parameters": {
@@ -63,7 +63,7 @@
     },
     "validatorVmAmount": {
       "type": "int",
-      "defaultValue": 4,
+      "defaultValue": 10,
       "maxValue": 10,
       "minValue": 4,
       "metadata": {
@@ -89,6 +89,15 @@
       "defaultValue": "",
       "metadata": {
         "description": "RPC VM availability zones"
+      }
+    },
+    "rpcVmAmount": {
+      "type": "int",
+      "defaultValue": 6,
+      "maxValue": 10,
+      "minValue": 2,
+      "metadata": {
+        "description": "RPC VM amount"
       }
     },
     "indexerEnabled": {
@@ -176,6 +185,19 @@
     "roleId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
   },
   "resources": [
+    {
+        "apiVersion": "2020-06-01",
+        "name": "pid-304ea87a-8ef4-476c-afae-a92d7b55058f-partnercenter",
+        "type": "Microsoft.Resources/deployments",
+        "properties": {
+            "mode": "Incremental",
+            "template": {
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "resources": []
+            }
+        }
+    },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
       "apiVersion": "2022-01-31-preview",
@@ -1106,7 +1128,7 @@
             "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', uniqueString(resourceGroup().id))), '2022-07-01').subnets[0].id]"
           },
           "totalNodes": {
-            "value": 2
+            "value": "[parameters('rpcVmAmount')]"
           },
           "availabilityZones": {
             "value": "[parameters('rpcAvailabilityZones')]"

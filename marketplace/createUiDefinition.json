@@ -99,7 +99,7 @@
                             "offer": "0001-com-ubuntu-server-focal",
                             "sku": "20_04-lts-gen2"
                         },
-                        "count": 4,
+                        "count": 10,
                         "visible": true
                     },
                     {
@@ -204,7 +204,7 @@
                     {
                         "name": "rpcNodes",
                         "type": "Microsoft.Common.CheckBox",
-                        "label": "Include RPC nodes (2)"
+                        "label": "Include RPC nodes (4)"
                     },
 					{
                         "name": "vmSize",
@@ -223,7 +223,7 @@
                             "offer": "0001-com-ubuntu-server-focal",
                             "sku": "20_04-lts-gen2"
                         },
-                        "count": 2,
+                        "count": 6,
                         "visible": "[equals(true, steps('rpcConfig').rpcNodes)]"
                     },
                     {
