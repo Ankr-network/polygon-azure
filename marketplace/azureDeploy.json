@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "2965604029594518896"
+      "templateHash": "7201164413069974576"
     }
   },
   "parameters": {
@@ -63,7 +63,7 @@
     },
     "validatorVmAmount": {
       "type": "int",
-      "defaultValue": 10,
+      "defaultValue": 4,
       "maxValue": 10,
       "minValue": 4,
       "metadata": {
@@ -93,7 +93,7 @@
     },
     "rpcVmAmount": {
       "type": "int",
-      "defaultValue": 6,
+      "defaultValue": 2,
       "maxValue": 10,
       "minValue": 2,
       "metadata": {
@@ -186,6 +186,19 @@
   },
   "resources": [
     {
+      "apiVersion": "2020-06-01",
+      "name": "pid-304ea87a-8ef4-476c-afae-a92d7b55058f-partnercenter",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+          "mode": "Incremental",
+          "template": {
+              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "resources": []
+          }
+      }
+    },
+    {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
       "apiVersion": "2022-01-31-preview",
       "name": "[format('{0}mi', uniqueString(resourceGroup().id))]",
@@ -234,7 +247,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2021-06-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('{0}strg', uniqueString(resourceGroup().id))]",
       "location": "[parameters('location')]",
       "kind": "StorageV2",

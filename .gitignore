@@ -2,3 +2,7 @@ main.json
 test
 arm-ttk
 app.zip
+marketplace/*.zip
+marketplace/small
+marketplace/medium
+marketplace/large

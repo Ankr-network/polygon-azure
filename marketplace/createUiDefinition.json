@@ -59,6 +59,15 @@
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Full Token Name",
+                        "constraints": {
+                            "required": true,
+                            "validations": [
+                              {
+                                "regex": "^[a-z0-9A-Z]{3,24}$",
+                                "message": "Only alphanumeric characters are allowed, and the value must be 1-24 characters long."
+                              }
+                            ]
+                        },
                         "toolTip": "Full Token Name. Example: SuperTestCoin"
                     },
                     {
@@ -66,6 +75,15 @@
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Token Symbol",
+                        "constraints": {
+                            "required": true,
+                            "validations": [
+                              {
+                                "regex": "^[a-z0-9A-Z]{2,6}$",
+                                "message": "Only alphanumeric characters are allowed, and the value must be 2-6 characters long."
+                              }
+                            ]
+                        },
                         "toolTip": "Token Symbol. Example: STC"
                     },
                     {
@@ -73,6 +91,15 @@
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Block gas limit",
+                        "constraints": {
+                            "required": true,
+                            "validations": [
+                              {
+                                "regex": "^[0-9]+$",
+                                "message": "Only numeric characters are allowed"
+                              }
+                            ]
+                        },
                         "toolTip": "Gas limit for each block mined. Default: 10000000"
                     },
                     {
@@ -80,13 +107,22 @@
                         "type": "Microsoft.Common.TextBox",
                         "visible": true,
                         "label": "Epoch Size",
+                        "constraints": {
+                            "required": true,
+                            "validations": [
+                              {
+                                "regex": "^(?:100|[1-9][0-9]?)$",
+                                "message": "Only numeric characters are allowed, and the value must be between 1-100"
+                              }
+                            ]
+                        },
                         "toolTip": "Size in blocks of each epoch. Default: 10"
                     },
 					{
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Size",
-                        "toolTip": "",
+                        "toolTip": "Size of the VM",
                         "recommendedSizes": [
                             "Standard_D4s_v4"
                         ],
@@ -99,13 +135,14 @@
                             "offer": "0001-com-ubuntu-server-focal",
                             "sku": "20_04-lts-gen2"
                         },
-                        "count": 10,
+                        "count": 4,
                         "visible": true
                     },
                     {
                         "name": "availabilityOptions",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Availability Options",
+                        "toolTip": "Enables infrastructure redundancy",
                         "defaultValue": "No infrastructure redundancy required",
                         "constraints": {
                             "allowedValues": [
@@ -126,6 +163,7 @@
                         "name": "availabilityZones",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Availability Zones",
+                        "toolTip": "Choose Availability Zone to deploy",
                         "defaultValue": "Zones 3",
                         "constraints": {
                             "allowedValues": [
@@ -168,7 +206,7 @@
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Size",
-                        "toolTip": "",
+                        "toolTip": "Size of the VM",
                         "recommendedSizes": [
                             "Standard_D4s_v4"
                         ],
@@ -204,13 +242,14 @@
                     {
                         "name": "rpcNodes",
                         "type": "Microsoft.Common.CheckBox",
-                        "label": "Include RPC nodes (4)"
+                        "toolTip": "Will deploy RPC nodes if selected",
+                        "label": "Include RPC nodes (2)"
                     },
 					{
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Size",
-                        "toolTip": "",
+                        "toolTip": "Size of the VM",
                         "recommendedSizes": [
                             "Standard_D4s_v4"
                         ],
@@ -223,13 +262,14 @@
                             "offer": "0001-com-ubuntu-server-focal",
                             "sku": "20_04-lts-gen2"
                         },
-                        "count": 6,
+                        "count": 2,
                         "visible": "[equals(true, steps('rpcConfig').rpcNodes)]"
                     },
                     {
                         "name": "availabilityOptions",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Availability Options",
+                        "toolTip": "Enables infrastructure redundancy",
                         "defaultValue": "No infrastructure redundancy required",
                         "constraints": {
                             "allowedValues": [
@@ -250,6 +290,7 @@
                         "name": "availabilityZones",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Availability Zones",
+                        "toolTip": "Choose Availability Zone to deploy",
                         "defaultValue": "Zones 3",
                         "constraints": {
                             "allowedValues": [
@@ -291,13 +332,14 @@
                     {
                         "name": "explorerNodes",
                         "type": "Microsoft.Common.CheckBox",
+                        "toolTip": "Enables explorer node",
                         "label": "Include Explorer"
                     },
 					{
                         "name": "vmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Size",
-                        "toolTip": "",
+                        "toolTip": "Size of the VM",
                         "recommendedSizes": [
                             "Standard_D4s_v4"
                         ],
@@ -317,6 +359,7 @@
                         "name": "availabilityOptions",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Availability Options",
+                        "toolTip": "Enables infrastructure redundancy",
                         "defaultValue": "No infrastructure redundancy required",
                         "constraints": {
                             "allowedValues": [
@@ -337,6 +380,7 @@
                         "name": "availabilityZones",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Availability Zones",
+                        "toolTip": "Choose Availability Zone to deploy",
                         "defaultValue": "Zones 3",
                         "constraints": {
                             "allowedValues": [

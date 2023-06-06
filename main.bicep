@@ -27,7 +27,7 @@ param validatorAvailabilityZones string = ''
 @description('Validator VM amount')
 @minValue(4)
 @maxValue(10)
-param validatorVmAmount int = 4
+param validatorVmAmount int = 10
 
 // @description('Addresses and the amount of tokens to premine.')
 // @metadata({
@@ -51,6 +51,11 @@ param rpcVmSize string = 'Standard_D4s_v4'
 
 @description('RPC VM availability zones')
 param rpcAvailabilityZones string = ''
+
+@description('RPC VM amount')
+@minValue(2)
+@maxValue(10)
+param rpcVmAmount int = 6
 
 @description('Indexer enabled')
 param indexerEnabled bool = false
@@ -139,7 +144,7 @@ resource akv 'Microsoft.KeyVault/vaults@2022-07-01' = {
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: '${uniqueString(resourceGroup().id)}strg'
   location: location
   kind: 'StorageV2'
@@ -444,7 +449,7 @@ module rpcVmModule 'modules/rpcVm.bicep' = if (rpcEnabled) {
     managedIdentity: managedIdentity.id
     nsg: nsg.id
     subnetId: vnet.properties.subnets[0].id
-    totalNodes: 2
+    totalNodes: rpcVmAmount
     availabilityZones: rpcAvailabilityZones
     loadBalancerName: loadBalancerName
     loadBalancerBackendName: 'lbrpcbe'
