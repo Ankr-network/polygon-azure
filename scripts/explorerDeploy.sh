@@ -64,7 +64,7 @@ services:
         BLOCK_TRANSFORMER: 'clique'
         COIN: 'TOKEN'
         COIN_NAME: 'TOKEN'
-        ETHEREUM_JSONRPC_HTTP_URL: http://10.1.1.16:10001/
+        ETHEREUM_JSONRPC_HTTP_URL: http://10.1.1.21:10001/
         DATABASE_URL: postgresql://postgres:@db:5432/blockscout?ssl=false
         ECTO_USE_SSL: 'false'
         SECRET_KEY_BASE: '56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN'
