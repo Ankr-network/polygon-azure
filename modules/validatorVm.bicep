@@ -148,7 +148,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/validator.sh'
       ]
-      commandToExecute: '/bin/bash validator.sh ${managedIdentity} ${akvName} ${e} ${strgName}'
+      commandToExecute: '/bin/bash validator.sh ${managedIdentity} ${akvName} ${e} ${strgName} ${polygonVersion}'
     }
   }
 }]

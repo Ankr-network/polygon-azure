@@ -9,6 +9,8 @@ nativeTokenConfig=$5
 blockGasLimit=$6
 epochSize=$7
 
+version=$8
+
 
 
 # while [ $# -gt 0 ]; do
@@ -28,7 +30,7 @@ function installDependecies(){
     
 
     cd ~/
-    mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v0.9.0/polygon-edge_0.9.0_linux_amd64.tar.gz && tar xvf polygon-edge_0.9.0_linux_amd64.tar.gz
+    mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v${version}/polygon-edge_${version}_linux_amd64.tar.gz && tar xvf polygon-edge_${version}_linux_amd64.tar.gz
     sudo mv polygon-edge /usr/local/bin/
 
     # Install docker
@@ -219,7 +221,7 @@ function initRootchain() {
             --data-dir /srv/tank/${folderName}${counter} \
             --jsonrpc http://127.0.0.1:8545 &> register_${counter}_output.log
 
-        # Ignoring error as there is a bug within v0.9.0 of polygon-edge
+        # Ignoring error as there is a bug within v${version} of polygon-edge
         polygon-edge polybft stake \
             --data-dir /srv/tank/${folderName}${counter} \
             --amount 1000000000000000000000000 \

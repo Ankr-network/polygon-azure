@@ -148,8 +148,8 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/rootchain.sh'
       ]
-      // /bin/bash rootchain.sh managedIdentity=$1 vaultName=$2 validatorsAmount=$3 storageAccountName=$4 nativeTokenConfig=$5 blockGasLimit=$6 epochSize=$7
-      commandToExecute: '/bin/bash rootchain.sh ${managedIdentity} ${akvName} ${totalNodes} ${strgName} "${tokenFullName}:${tokenSymbol}:18" ${blockGasLimit} ${epochSize}'
+      // /bin/bash rootchain.sh managedIdentity=$1 vaultName=$2 validatorsAmount=$3 storageAccountName=$4 nativeTokenConfig=$5 blockGasLimit=$6 epochSize=$7 polygonVersion=$8
+      commandToExecute: '/bin/bash rootchain.sh ${managedIdentity} ${akvName} ${totalNodes} ${strgName} "${tokenFullName}:${tokenSymbol}:18" ${blockGasLimit} ${epochSize} ${polygonVersion}'
     }
   }
 }

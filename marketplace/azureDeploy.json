@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "7201164413069974576"
+      "templateHash": "12633199030444017143"
     }
   },
   "parameters": {
@@ -63,7 +63,7 @@
     },
     "validatorVmAmount": {
       "type": "int",
-      "defaultValue": 4,
+      "defaultValue": 10,
       "maxValue": 10,
       "minValue": 4,
       "metadata": {
@@ -93,7 +93,7 @@
     },
     "rpcVmAmount": {
       "type": "int",
-      "defaultValue": 2,
+      "defaultValue": 6,
       "maxValue": 10,
       "minValue": 2,
       "metadata": {
@@ -180,24 +180,11 @@
     }
   },
   "variables": {
-    "polygonVersion": "v0.9.0",
+    "polygonVersion": "1.0.0-rc1",
     "loadBalancerName": "[format('{0}lb', uniqueString(resourceGroup().id))]",
     "roleId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
   },
   "resources": [
-    {
-      "apiVersion": "2020-06-01",
-      "name": "pid-304ea87a-8ef4-476c-afae-a92d7b55058f-partnercenter",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-          "mode": "Incremental",
-          "template": {
-              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-              "contentVersion": "1.0.0.0",
-              "resources": []
-          }
-      }
-    },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
       "apiVersion": "2022-01-31-preview",
@@ -579,7 +566,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "1732245017332536870"
+              "templateHash": "8089559825757556437"
             }
           },
           "parameters": {
@@ -789,7 +776,7 @@
                   "fileUris": [
                     "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/rootchain.sh', parameters('polygonVersion'))]"
                   ],
-                  "commandToExecute": "[format('/bin/bash rootchain.sh {0} {1} {2} {3} \"{4}:{5}:18\" {6} {7}', parameters('managedIdentity'), parameters('akvName'), parameters('totalNodes'), parameters('strgName'), parameters('tokenFullName'), parameters('tokenSymbol'), parameters('blockGasLimit'), parameters('epochSize'))]"
+                  "commandToExecute": "[format('/bin/bash rootchain.sh {0} {1} {2} {3} \"{4}:{5}:18\" {6} {7} {8}', parameters('managedIdentity'), parameters('akvName'), parameters('totalNodes'), parameters('strgName'), parameters('tokenFullName'), parameters('tokenSymbol'), parameters('blockGasLimit'), parameters('epochSize'), parameters('polygonVersion'))]"
                 }
               },
               "dependsOn": [
@@ -864,7 +851,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "7382568219375910393"
+              "templateHash": "16716379212520744515"
             }
           },
           "parameters": {
@@ -1067,7 +1054,7 @@
                   "fileUris": [
                     "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/validator.sh', parameters('polygonVersion'))]"
                   ],
-                  "commandToExecute": "[format('/bin/bash validator.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('strgName'))]"
+                  "commandToExecute": "[format('/bin/bash validator.sh {0} {1} {2} {3} {4}', parameters('managedIdentity'), parameters('akvName'), range(0, parameters('totalNodes'))[copyIndex()], parameters('strgName'), parameters('polygonVersion'))]"
                 }
               },
               "dependsOn": [
@@ -1150,7 +1137,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "11875056637927446248"
+              "templateHash": "10478865922943168832"
             }
           },
           "parameters": {
@@ -1370,7 +1357,7 @@
                   "fileUris": [
                     "[format('https://raw.githubusercontent.com/Ankr-network/polygon-azure/{0}/scripts/rpc.sh', parameters('polygonVersion'))]"
                   ],
-                  "commandToExecute": "[format('/bin/bash rpc.sh {0} {1} {2} {3}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10), parameters('strgName'))]"
+                  "commandToExecute": "[format('/bin/bash rpc.sh {0} {1} {2} {3} {4}', parameters('managedIdentity'), parameters('akvName'), add(int(range(0, parameters('totalNodes'))[copyIndex()]), 10), parameters('strgName'), parameters('polygonVersion'))]"
                 }
               },
               "dependsOn": [

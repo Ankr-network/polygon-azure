@@ -94,7 +94,7 @@ param epochSize int = 10
 // this is used to ensure uniqueness to naming (making it non-deterministic)
 param rutcValue string = utcNow()
 
-var polygonVersion = 'v0.9.0'
+var polygonVersion = '1.0.0-rc1'
 
 // var blockscoutVersion = '4.1.5'
 

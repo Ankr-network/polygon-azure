@@ -4,6 +4,8 @@ vaultName=$2
 nodeId=$3
 storageAccountName=$4
 
+version=$5
+
 nodeId=$(( nodeId + 1 ))
 
 # Install dependencies
@@ -19,7 +21,7 @@ sudo apt install jq -y
 
 # Install polygon-edge
 cd ~/
-mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v0.9.0/polygon-edge_0.9.0_linux_amd64.tar.gz && tar xvf polygon-edge_0.9.0_linux_amd64.tar.gz
+mkdir -p src && cd src && wget https://github.com/0xPolygon/polygon-edge/releases/download/v${version}/polygon-edge_${version}_linux_amd64.tar.gz && tar xvf polygon-edge_${version}_linux_amd64.tar.gz
 sudo mv polygon-edge /usr/local/bin/
 
 # Download Keys and genesis file

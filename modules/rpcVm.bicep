@@ -150,7 +150,7 @@ resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2022-11-01' =
       fileUris: [
         'https://raw.githubusercontent.com/Ankr-network/polygon-azure/${polygonVersion}/scripts/rpc.sh'
       ]
-      commandToExecute: '/bin/bash rpc.sh ${managedIdentity} ${akvName} ${int(e)+10} ${strgName}'
+      commandToExecute: '/bin/bash rpc.sh ${managedIdentity} ${akvName} ${int(e)+10} ${strgName} ${polygonVersion}'
     }
   }
 }]
