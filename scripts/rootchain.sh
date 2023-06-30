@@ -186,10 +186,18 @@ function initRootchain() {
         --transactions-allow-list-enabled ${allowAddressList} \
         --premine ${addressesToPremine}:${amountToPremine} --native-token-config ${nativeTokenConfig} &> genesis_output.log
 
-    polygon-edge rootchain deploy --genesis /srv/tank/configs/genesis.json --json-rpc http://127.0.0.1:8545 --test &> contracts_output.log
+    polygon-edge polybft stake-manager-deploy --test --jsonrpc http://127.0.0.1:8545 --genesis /srv/tank/configs/genesis.json
+
+    stakeManagerAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.stakeManagerAddr')
+    stakeTokenAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.stakeTokenAddr')
+
+    polygon-edge rootchain deploy --genesis /srv/tank/configs/genesis.json \
+    --json-rpc http://127.0.0.1:8545 \
+    --test \
+    --stake-manager ${stakeManagerAddr} \
+    --stake-token ${stakeTokenAddr} &> contracts_output.log
 
     rootERC20=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.nativeERC20Address')
-    stakeManagerAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.stakeManagerAddr')
     customSupernetManagerAddr=$(cat /srv/tank/configs/genesis.json | jq -r '.params.engine.polybft.bridge.customSupernetManagerAddr')
     chainID=$(cat /srv/tank/configs/genesis.json | jq -r '.params.chainID')
 
