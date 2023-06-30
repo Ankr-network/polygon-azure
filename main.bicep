@@ -27,7 +27,7 @@ param validatorAvailabilityZones string = ''
 @description('Validator VM amount')
 @minValue(4)
 @maxValue(10)
-param validatorVmAmount int = 10
+param validatorVmAmount int = 4
 
 // @description('Addresses and the amount of tokens to premine.')
 // @metadata({
@@ -55,7 +55,7 @@ param rpcAvailabilityZones string = ''
 @description('RPC VM amount')
 @minValue(2)
 @maxValue(10)
-param rpcVmAmount int = 6
+param rpcVmAmount int = 2
 
 @description('Indexer enabled')
 param indexerEnabled bool = false

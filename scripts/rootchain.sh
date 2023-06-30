@@ -179,7 +179,7 @@ function initRootchain() {
     mkdir -p /srv/tank/configs
 
     polygon-edge genesis --dir /srv/tank/configs/genesis.json --block-gas-limit ${blockGasLimit} --epoch-size ${epochSize} \
-        ${validatorCommandLine} \
+        --validators-path /srv/tank/ --validators-prefix ${folderName} \
         --consensus polybft \
         --reward-wallet ${rewardWallet}:1000000 \
         --transactions-allow-list-admin ${allowAddressList} \

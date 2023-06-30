@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "12633199030444017143"
+      "templateHash": "17158318209080327184"
     }
   },
   "parameters": {
@@ -63,7 +63,7 @@
     },
     "validatorVmAmount": {
       "type": "int",
-      "defaultValue": 10,
+      "defaultValue": 4,
       "maxValue": 10,
       "minValue": 4,
       "metadata": {
@@ -93,7 +93,7 @@
     },
     "rpcVmAmount": {
       "type": "int",
-      "defaultValue": 6,
+      "defaultValue": 2,
       "maxValue": 10,
       "minValue": 2,
       "metadata": {
