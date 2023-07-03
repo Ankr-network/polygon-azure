@@ -147,7 +147,7 @@ function initRootchain() {
     rewardWallet="0x3383e0EbB44d2929abD654cFe4DF52C818af3230"
     addressesToPremine="0x3383e0EbB44d2929abD654cFe4DF52C818af3230"
     amountToPremine=1000000000000000000000
-    # nativeTokenConfig="SuperTestCoin:STC:18"
+    # nativeTokenConfig="SuperTestCoin:STC:18:true"
     # blockGasLimit=10000000
     # epochSize=10
 
@@ -184,7 +184,7 @@ function initRootchain() {
         --reward-wallet ${rewardWallet}:1000000 \
         --transactions-allow-list-admin ${allowAddressList} \
         --transactions-allow-list-enabled ${allowAddressList} \
-        --premine ${addressesToPremine}:${amountToPremine} --native-token-config ${nativeTokenConfig} &> genesis_output.log
+        --premine ${addressesToPremine}:${amountToPremine} --native-token-config "${nativeTokenConfig}:true" &> genesis_output.log
 
     polygon-edge polybft stake-manager-deploy --test --jsonrpc http://127.0.0.1:8545 --genesis /srv/tank/configs/genesis.json
 
